@@ -12,8 +12,8 @@ TARGET = main
 # MCU: part number to build for
 MCU = TM4C123GH6PM
 # SOURCES: list of input source sources
-#SOURCES = main.c startup_gcc.c
-SOURCES = Nokia5110.c
+SOURCES = main.c startup_gcc.c
+#SOURCES = main.c
 # INCLUDES: list of includes, by default, use Includes directory
 INCLUDES = -IInclude
 # OUTDIR: directory to use for output
@@ -52,7 +52,7 @@ OBJECTS = $(addprefix $(OUTDIR)/,$(notdir $(SOURCES:.c=.o)))
 # default: build bin
 all: $(OUTDIR)/$(TARGET).bin
 
-$(OUTDIR)/%.o: src/%.c | $(OUTDIR)
+$(OUTDIR)/%.o: src.old/%.c | $(OUTDIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(OUTDIR)/a.out: $(OBJECTS)

@@ -23,7 +23,7 @@
 // Constant declarations to access port registers using 
 // symbolic names instead of addresses
 // TExaS.o is the object code for the real-board grader
-#include "TExaS.h"
+//#include "TExaS.h"
 #define GPIO_PORTF_DATA_R       (*((volatile unsigned long *)0x400253FC))
 #define GPIO_PORTF_DIR_R        (*((volatile unsigned long *)0x40025400))
 #define GPIO_PORTF_AFSEL_R      (*((volatile unsigned long *)0x40025420))

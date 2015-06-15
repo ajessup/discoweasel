@@ -52,7 +52,7 @@ OBJECTS = $(addprefix $(OUTDIR)/,$(notdir $(SOURCES:.c=.o)))
 # default: build bin
 all: $(OUTDIR)/$(TARGET).bin
 
-$(OUTDIR)/%.o: src.old/%.c | $(OUTDIR)
+$(OUTDIR)/%.o: src/%.c | $(OUTDIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(OUTDIR)/a.out: $(OBJECTS)

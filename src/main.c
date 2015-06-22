@@ -32,7 +32,7 @@ unsigned long Out;      // outputs to PF3,PF2,PF1 (multicolor LED)
 // 3. Subroutines Section
 // MAIN: Mandatory for a C Program to be executable
 int main(void){
-  unsigned short mode=0;
+  //unsigned short mode=0;
 
   //TExaS_Init(SW_PIN_PF40,LED_PIN_PF321); 
   // TExaS_Init initializes the real board grader for lab 4

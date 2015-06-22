@@ -20,38 +20,57 @@
 // green LED connected to PF3 on the Launchpad
 
 #include "gpio.h"
+#include "nokia.h"
 
 // 2. Declarations Section
 //   Global Variables
-unsigned long SW1,SW2;  // input from PF4,PF0
+unsigned long SW1, SW1_prev,SW2;  // input from PF4,PF0
 unsigned long Out;      // outputs to PF3,PF2,PF1 (multicolor LED)
 
 
 
 // 3. Subroutines Section
 // MAIN: Mandatory for a C Program to be executable
-int main(void){    
+int main(void){
+  unsigned short mode=0;
+
   //TExaS_Init(SW_PIN_PF40,LED_PIN_PF321); 
   // TExaS_Init initializes the real board grader for lab 4
   PortF_Init();        // Call initialization of port PF4, PF3, PF2, PF1, PF0    
-  //EnableInterrupts();  // The grader uses interrupts
+  Nokia_InitDisplay();
+
   while(1){
-    SW1 = GPIO_PORTF_DATA_R&0x01;     // read PF0 into SW1
-    SW2 = GPIO_PORTF_DATA_R&0x10;     // read PF4 into SW2
-    if(SW1&&SW2){                     // both pressed
-      GPIO_PORTF_DATA_R = 0x04;       // LED is blue
-    } else{                           
-      if(SW1&&(!SW2)){                // just SW1 pressed
-        GPIO_PORTF_DATA_R = 0x02;     // LED is red
-      } else{                        
-        if((!SW1)&&SW2){              // just SW2 pressed
-          GPIO_PORTF_DATA_R = 0x08;   // LED is green
-        }else{                        // neither switch
-          GPIO_PORTF_DATA_R = 0x00;   // LED is off
-        }
-      }
-    }
+	if(GPIO_PORTF_DATA_R&0x01){
+		GPIO_PORTF_DATA_R = 0x04; // LED is blue
+	    //Nokia5110_Clear();
+	    //Nokia5110_OutString("The nerdiest way to say");
+	}else{
+		GPIO_PORTF_DATA_R = 0x02;     // LED is red
+	    //Nokia5110_Clear();
+	    //Nokia5110_OutString("I love Beets xx");
+	}
   }
+
+
+
+
+	// while(1){
+	//     SW1 = GPIO_PORTF_DATA_R&0x01;     // read PF0 into SW1
+	//     SW2 = GPIO_PORTF_DATA_R&0x10;     // read PF4 into SW2
+	//     if(SW1&&SW2){                     // both pressed
+	//       GPIO_PORTF_DATA_R = 0x04;       // LED is blue
+	//     } else{
+	//       if(SW1&&(!SW2)){                // just SW1 pressed
+	//         GPIO_PORTF_DATA_R = 0x02;     // LED is red
+	//       } else{
+	//         if((!SW1)&&SW2){              // just SW2 pressed
+	//           GPIO_PORTF_DATA_R = 0x08;   // LED is green
+	//         }else{                        // neither switch
+	//           GPIO_PORTF_DATA_R = 0x00;   // LED is off
+	//         }
+	//       }
+	//     }
+	//   }
 }
 
 

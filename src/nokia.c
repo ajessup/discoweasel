@@ -51,6 +51,8 @@
  */
 
 void TM4C123_SSI_Init() {	
+	unsigned long delay;
+	
 	// Enable the SSI module using the RCGCSSI register
 	// The RCGCSSI register provides software the capability to enable and disable the SSI modules in
 	// Run mode. 
@@ -67,16 +69,19 @@ void TM4C123_SSI_Init() {
 	
 	SYSCTL_RCGCGPIO_R |= 0x01;
 	
+	// Add a delay to alow register to continue activating
+	delay = SYSCTL_RCGCGPIO_R;
+	
 	// Set the GPIO AFSEL bits for the appropriate pins, we want to select the alternative function
 	// for the SSI pins (PA2, PA3 and PA5) and make sure it's disabled for PA4, PA6 and PA7
 	
 	GPIO_PORTA_AFSEL_R = 0x2C;
 	
 	// Set the direction register for PA4, PA6 and PA7 to output
-	GPIO_PORTA_DIR_R |= 0xD0; 
+	GPIO_PORTA_DIR_R |= 0xC0; // @TODO - Make PA4 out as well, set to |= 0xD0
 	
 	// Enable digital I/O on PA2,3,4,5,6,7
-	GPIO_PORTA_DEN_R |= 0xFE;
+	GPIO_PORTA_DEN_R |= 0xEC;  // @TODO - Set to xFC to enable PA4
 	
 	// Configure the PMCn fileds in the GPIOCTL register to assign the SSI signals to the appropriate pins
 	
@@ -84,7 +89,7 @@ void TM4C123_SSI_Init() {
 	GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0xFF0F00FF) + 0x00202200;
 	
 	// Set PA4, PA6 and PA7 as GPIO (function 0)
-	GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0x00F0FFFF);
+	GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0x00F0FFFF); //@TODO Consider not setting PA4
 	
 	// Having enabled SSI0, we now need to configure it...
 	
@@ -92,7 +97,7 @@ void TM4C123_SSI_Init() {
 	SSI0_CR1_R &= 0x1D;
 	
 	// Select SSI master mode (set SSICR1 to 0x00000000)
-	SSI0_CR1_R = 0x00000000; // @TODO - This could be more elegant
+	SSI0_CR1_R &= 0xFB; 
 	
 	// Configure the SSI clock source to the whatever the system clock is, and not the software controled precision oscillator
 	SSI0_CCR_R = 0x0;
@@ -100,16 +105,16 @@ void TM4C123_SSI_Init() {
 	// Configure the clock prescale divisor by writing the SSICPRS register
 	// The final bit rate will be = sysclock speed / (PsD * (1 + SCR)) (see below for SCR details)
 	// We assume the interal clock is set to 50MHz, and divide by 16 for a bus speed of 3.125MHz
-	SSI0_SSICPS_R = 0x10;
+	SSI0_SSICPS_R = (SSI0_SSICPS_R & 0xFFFFFF00)+ 0x10;
 	
 	// Write the SSICR0 register with:
 	
 	//  - the Serial Clock Rate (SCR) (we will set to 0)
 	SSI0_CR0_R = (SSI0_CR0_R & 0x00000FFF) +
 	//  - the clock phase (SPH) (set to 0x0, as we wish to capture data on the second clock edge transition)
-		(1<<7) +
+		(0<<7) +
 	//  - and polarity (SPO) (set to 0x0, as the clock should be LOW when no data is being transfered)
-		(1<<6) +
+		(0<<6) +
 	//  - the protocol (FRF) mode to be Freescale SPI (0x0)
 		(0<<4) +
 	//  - the data size (DSS) (8 bits)
@@ -156,5 +161,7 @@ void Nokia_InitDisplay() {
     Nokia_WriteCmd(0x04); // Set temp coefficient
 	Nokia_WriteCmd(0x14); // LCD Bias Mode 1:40
 	Nokia_WriteCmd(0x20); // Back to the basic command set
-	Nokia_WriteCmd(0x09); // LCD all segments up
+	while(1){
+		Nokia_WriteCmd(0x09); // LCD all segments up
+	}
 }

@@ -157,7 +157,7 @@ void Nokia_InitDisplay() {
 	GPIO_PORTA_DATA_R = GPIO_PORTA_7_ENABLE;
 	
 	Nokia_WriteCmd(0x21); // Enable LCD extended commands
-	Nokia_WriteCmd(0xB8); // Set Vop (contrast)
+	Nokia_WriteCmd(0xC0); // Set Vop (contrast)
     Nokia_WriteCmd(0x04); // Set temp coefficient
 	Nokia_WriteCmd(0x14); // LCD Bias Mode 1:40
 	Nokia_WriteCmd(0x20); // Back to the basic command set

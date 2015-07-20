@@ -39,6 +39,7 @@
 #define GPIO_PORTA_DATA_R    (*((volatile unsigned long *)0x400043FC)) // Regsiter 1 - GPIO Data register (+full bitmask)
 #define GPIO_PORTA_DIR_R     (*((volatile unsigned long *)0x40004400)) // Register 2 - GPIO Direction Control Register
 #define GPIO_PORTA_AFSEL_R   (*((volatile unsigned long *)0x40004420)) // Register 10 - GPIO AFSEL for Port A
+#define GPIO_PORTA_AMSEL_R   (*((volatile unsigned long *)0x40004528))
 #define GPIO_PORTA_DEN_R     (*((volatile unsigned long *)0x4000451C)) // Register 18 - GPIO Port A digital enable
 #define GPIO_PORTA_GPIOCTL_R (*((volatile unsigned long *)0x4000452C)) // Register 22 - GPIOCTL selector for port A
 
@@ -90,6 +91,9 @@ void TM4C123_SSI_Init() {
 	
 	// Set PA4, PA6 and PA7 as GPIO (function 0)
 	GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0x00F0FFFF); //@TODO Consider not setting PA4
+	
+	// disable analog functionality on PA2,3,5,6,7
+	GPIO_PORTA_AMSEL_R &= ~0xEC;
 	
 	// Having enabled SSI0, we now need to configure it...
 	

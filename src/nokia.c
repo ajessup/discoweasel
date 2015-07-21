@@ -165,7 +165,9 @@ void Nokia_InitDisplay() {
     Nokia_WriteCmd(0x04); // Set temp coefficient
 	Nokia_WriteCmd(0x14); // LCD Bias Mode 1:40
 	Nokia_WriteCmd(0x20); // Back to the basic command set
+	Nokia_WriteCmd(0x0c);
+	Nokia_WriteCmd(0x09); // LCD all segments up
 	while(1){
-		Nokia_WriteCmd(0x09); // LCD all segments up
+		 
 	}
 }

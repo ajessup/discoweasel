@@ -18,6 +18,9 @@
  **/
 
 #include "nokia.h"
+#include "scrooge.h"
+
+// @TODO - Refactor all of these to use defs from #include "tm4c123gh6pm.h"
 
 #define SSI_STATUS_BUSY      0x10
 #define SSI_RX_FIFO_FULL     0x08
@@ -136,15 +139,35 @@ void TM4C123_SSI_Init() {
  *  * Set the CE line high again (the SSI module will do this)
  */ 
 
-void Nokia_WriteCmd(char cmd) {
+void Nokia_Write(char data, bool cmd) {
 	// In sending a command, wait until the SSI0 FIFO buffer is free
 	while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
-	// Set the DC line (PA 6) to low
-	GPIO_PORTA_DATA_R &= ~GPIO_PORTA_7_ENABLE;
+	if(cmd){
+		// Set the DC line (PA 6) to low
+		GPIO_PORTA_DATA_R &= ~GPIO_PORTA_6_ENABLE;
+	}else{
+		// Set the DC line (PA 6) to low
+		GPIO_PORTA_DATA_R |= GPIO_PORTA_6_ENABLE;
+	}
+	
 	// Write the data
-	SSI0_DATA_R = cmd;
+	SSI0_DATA_R = data;
 	// Wait again until the buffer is free
 	while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
+}
+
+unsigned char Reverse_bits(unsigned char num){
+
+    int i=7; //size of unsigned char -1, on most machine is 8bits
+    unsigned char j=0;
+    unsigned char temp=0;
+
+    while(i>=0){
+      temp |= ((num>>j)&1)<< i;
+      i--;
+      j++;
+    }
+    return(temp); 
 }
 
 /**
@@ -160,14 +183,21 @@ void Nokia_InitDisplay() {
 	for(unsigned long delay=0; delay<10; delay=delay+1); // @TODO - Need a smarter way to do this
 	GPIO_PORTA_DATA_R = GPIO_PORTA_7_ENABLE;
 	
-	Nokia_WriteCmd(0x21); // Enable LCD extended commands
-	Nokia_WriteCmd(0xC0); // Set Vop (contrast)
-    Nokia_WriteCmd(0x04); // Set temp coefficient
-	Nokia_WriteCmd(0x14); // LCD Bias Mode 1:40
-	Nokia_WriteCmd(0x20); // Back to the basic command set
-	Nokia_WriteCmd(0x0c);
-	Nokia_WriteCmd(0x09); // LCD all segments up
-	while(1){
-		 
-	}
+	Nokia_Write(0x21, true); // Enable LCD extended commands
+	Nokia_Write(0xC0, true); // Set Vop (contrast)
+    Nokia_Write(0x04, true); // Set temp coefficient
+	Nokia_Write(0x14, true); // LCD Bias Mode 1:40
+	Nokia_Write(0x20, true); // Back to the basic command set
+	Nokia_Write(0x0c, true);
+	//Nokia_Write(0x08, true); // LCD all segments clear
+	//while(1){
+		for(unsigned short row=0; row<6; row=row+1){
+			for(unsigned short col=0; col<84; col=col+1){
+				Nokia_Write(Reverse_bits(scroogeImg[col][row]), false);
+			}
+		}
+		 //Nokia_WriteCmd(0x09); // LCD all segments up
+		 //Nokia_WriteCmd(0x08); // LCD all segments down
+		//}
 }
+

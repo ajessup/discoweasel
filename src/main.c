@@ -20,13 +20,13 @@
 // green LED connected to PF3 on the Launchpad
 
 #include "gpio.h"
+#include "tm4c123gh6pm.h"
 #include "nokia.h"
 
 // 2. Declarations Section
 //   Global Variables
 unsigned long SW1, SW1_prev,SW2;  // input from PF4,PF0
 unsigned long Out;      // outputs to PF3,PF2,PF1 (multicolor LED)
-
 
 
 // 3. Subroutines Section
@@ -37,18 +37,45 @@ int main(void){
   //TExaS_Init(SW_PIN_PF40,LED_PIN_PF321); 
   // TExaS_Init initializes the real board grader for lab 4
   PortF_Init();        // Call initialization of port PF4, PF3, PF2, PF1, PF0    
+  
+  // Init interrupt
+  
+  
   Nokia_InitDisplay();
 
+  // Enable interrupts
+  EnableInterupts();
+
   while(1){
-	if(GPIO_PORTF_DATA_R&0x01){
-		GPIO_PORTF_DATA_R = 0x04; // LED is blue
-	    //Nokia5110_Clear();
-	    //Nokia5110_OutString("The nerdiest way to say");
-	}else{
-		GPIO_PORTF_DATA_R = 0x02;     // LED is red
-	    //Nokia5110_Clear();
-	    //Nokia5110_OutString("I love Beets xx");
+	short color = pf4_push_count % 8;
+	switch(color){
+		case 0:
+			GPIO_PORTF_DATA_R = 0x02;
+			break;
+		case 1:
+			GPIO_PORTF_DATA_R = 0x04;
+			break;
+		case 2:
+			GPIO_PORTF_DATA_R = 0x08;
+			break;
+		case 3:
+			GPIO_PORTF_DATA_R = 0x0A;
+			break;
+		case 4:
+			GPIO_PORTF_DATA_R = 0x0C;
+			break;
+		case 5:
+			GPIO_PORTF_DATA_R = 0x0E;
+			break;
+		case 6:
+			GPIO_PORTF_DATA_R = 0x06;
+			break;
+		case 7:
+		default:
+			GPIO_PORTF_DATA_R = 0x00;
+			break;
 	}
+	WaitForInterrupt();
   }
 
 

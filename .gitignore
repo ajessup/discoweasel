@@ -4,3 +4,8 @@
 a.out
 .DS_Store
 *.log
+util/imgconvert/bin*
+util/imgconvert/lib*
+util/imgconvert/include*
+.Python
+*.pyc

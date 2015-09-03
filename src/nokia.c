@@ -18,7 +18,6 @@
  **/
 
 #include "nokia.h"
-#include "scrooge.h"
 
 // @TODO - Refactor all of these to use defs from #include "tm4c123gh6pm.h"
 
@@ -139,10 +138,10 @@ void TM4C123_SSI_Init() {
  *  * Set the CE line high again (the SSI module will do this)
  */ 
 
-void Nokia_Write(char data, bool cmd) {
+void Nokia_Write(char data, bool isCmd) {
 	// In sending a command, wait until the SSI0 FIFO buffer is free
 	while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
-	if(cmd){
+	if(isCmd){
 		// Set the DC line (PA 6) to low
 		GPIO_PORTA_DATA_R &= ~GPIO_PORTA_6_ENABLE;
 	}else{
@@ -189,15 +188,24 @@ void Nokia_InitDisplay() {
 	Nokia_Write(0x14, true); // LCD Bias Mode 1:40
 	Nokia_Write(0x20, true); // Back to the basic command set
 	Nokia_Write(0x0c, true);
-	//Nokia_Write(0x08, true); // LCD all segments clear
-	//while(1){
-		for(unsigned short row=0; row<6; row=row+1){
-			for(unsigned short col=0; col<84; col=col+1){
-				Nokia_Write(Reverse_bits(scroogeImg[col][row]), false);
-			}
-		}
-		 //Nokia_WriteCmd(0x09); // LCD all segments up
-		 //Nokia_WriteCmd(0x08); // LCD all segments down
-		//}
 }
 
+void Nokia_ClearScreen(void) {
+    for(unsigned short row=0; row<6; row=row+1){
+        for(unsigned short col=0; col<84; col=col+1){
+            Nokia_Write(0x00, false);
+        }
+    }
+}
+
+//@TODO - Do this from a pointer...
+void Nokia_WriteImg(char img[84][6]) {
+	//Nokia_Write(0x40, true); // Set cursor to 0,0
+	//Nokia_Write(0x80, true); // Set cursor to 0,0
+	// Write the image
+    for(unsigned short row=0; row<6; row=row+1){
+        for(unsigned short col=0; col<84; col=col+1){
+            Nokia_Write(Reverse_bits(img[col][row]), false);
+        }
+    }
+}

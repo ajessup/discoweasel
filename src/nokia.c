@@ -47,87 +47,87 @@
 
 #define SYSCTL_RCGCGPIO_R    (*((volatile unsigned long *)0x400FE608)) // Register 60 - GPIO RMCGC
 #define SYSCTL_RCGSSI_R      (*((volatile unsigned long *)0x400FE61C)) // Register 64 - SSI RMCGC
-#define SYSCTL_RCGC1_R	     (*((volatile unsigned long *)0x400FE104)) // Register 135 Run mode clock gating control register
+#define SYSCTL_RCGC1_R       (*((volatile unsigned long *)0x400FE104)) // Register 135 Run mode clock gating control register
 
 /**
  * To initilaise SSI on the Tiva C, we perform the following as described in section 15.4 of the Tiva C data sheet
  */
 
-void TM4C123_SSI_Init() {	
-	unsigned long delay;
-	
-	// Enable the SSI module using the RCGCSSI register
-	// The RCGCSSI register provides software the capability to enable and disable the SSI modules in
-	// Run mode. 
-	
-	// When enabled, a module is provided a clock and accesses to module registers are
-	// allowed. When disabled, the clock is disabled to save power and accesses to module registers
-	// generate a bus fault. This register provides the same capability as the legacy Run Mode Clock
-	// Gating Control Register n RCGCn registers specifically for the watchdog modules and has the
-	// same bit polarity as the corresponding RCGCn bits.
-	
-	SYSCTL_RCGSSI_R   |= 0x01;
-	
-	// Enable the clock for PA via the RCGCGPIO register
-	
-	SYSCTL_RCGCGPIO_R |= 0x01;
-	
-	// Add a delay to alow register to continue activating
-	delay = SYSCTL_RCGCGPIO_R;
-	
-	// Set the GPIO AFSEL bits for the appropriate pins, we want to select the alternative function
-	// for the SSI pins (PA2, PA3 and PA5) and make sure it's disabled for PA4, PA6 and PA7
-	
-	GPIO_PORTA_AFSEL_R = 0x2C;
-	
-	// Set the direction register for PA4, PA6 and PA7 to output
-	GPIO_PORTA_DIR_R |= 0xC0; // @TODO - Make PA4 out as well, set to |= 0xD0
-	
-	// Enable digital I/O on PA2,3,4,5,6,7
-	GPIO_PORTA_DEN_R |= 0xEC;  // @TODO - Set to xFC to enable PA4
-	
-	// Configure the PMCn fileds in the GPIOCTL register to assign the SSI signals to the appropriate pins
-	
-	// Set PA2, PA3 and PA5 as SSI (function 2)
-	GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0xFF0F00FF) + 0x00202200;
-	
-	// Set PA4, PA6 and PA7 as GPIO (function 0)
-	GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0x00F0FFFF); //@TODO Consider not setting PA4
-	
-	// disable analog functionality on PA2,3,5,6,7
-	GPIO_PORTA_AMSEL_R &= ~0xEC;
-	
-	// Having enabled SSI0, we now need to configure it...
-	
-	// Clear the SEE bit in the SSICR1 register
-	SSI0_CR1_R &= 0x1D;
-	
-	// Select SSI master mode (set SSICR1 to 0x00000000)
-	SSI0_CR1_R &= 0xFB; 
-	
-	// Configure the SSI clock source to the whatever the system clock is, and not the software controled precision oscillator
-	SSI0_CCR_R = 0x0;
-	
-	// Configure the clock prescale divisor by writing the SSICPRS register
-	// The final bit rate will be = sysclock speed / (PsD * (1 + SCR)) (see below for SCR details)
-	// We assume the interal clock is set to 50MHz, and divide by 16 for a bus speed of 3.125MHz
-	SSI0_SSICPS_R = (SSI0_SSICPS_R & 0xFFFFFF00)+ 0x10;
-	
-	// Write the SSICR0 register with:
-	
-	//  - the Serial Clock Rate (SCR) (we will set to 0)
-	SSI0_CR0_R = (SSI0_CR0_R & 0x00000FFF) +
-	//  - the clock phase (SPH) (set to 0x0, as we wish to capture data on the second clock edge transition)
-		(0<<7) +
-	//  - and polarity (SPO) (set to 0x0, as the clock should be LOW when no data is being transfered)
-		(0<<6) +
-	//  - the protocol (FRF) mode to be Freescale SPI (0x0)
-		(0<<4) +
-	//  - the data size (DSS) (8 bits)
-		0x7;
-	
-	// Finally, now we're done configuring, set the SEE bit in the SSICR1 register
-	SSI0_CR1_R |= 0x02;
+void TM4C123_SSI_Init() {   
+    unsigned long delay;
+    
+    // Enable the SSI module using the RCGCSSI register
+    // The RCGCSSI register provides software the capability to enable and disable the SSI modules in
+    // Run mode. 
+    
+    // When enabled, a module is provided a clock and accesses to module registers are
+    // allowed. When disabled, the clock is disabled to save power and accesses to module registers
+    // generate a bus fault. This register provides the same capability as the legacy Run Mode Clock
+    // Gating Control Register n RCGCn registers specifically for the watchdog modules and has the
+    // same bit polarity as the corresponding RCGCn bits.
+    
+    SYSCTL_RCGSSI_R   |= 0x01;
+    
+    // Enable the clock for PA via the RCGCGPIO register
+    
+    SYSCTL_RCGCGPIO_R |= 0x01;
+    
+    // Add a delay to alow register to continue activating
+    delay = SYSCTL_RCGCGPIO_R;
+    
+    // Set the GPIO AFSEL bits for the appropriate pins, we want to select the alternative function
+    // for the SSI pins (PA2, PA3 and PA5) and make sure it's disabled for PA4, PA6 and PA7
+    
+    GPIO_PORTA_AFSEL_R = 0x2C;
+    
+    // Set the direction register for PA4, PA6 and PA7 to output
+    GPIO_PORTA_DIR_R |= 0xC0; // @TODO - Make PA4 out as well, set to |= 0xD0
+    
+    // Enable digital I/O on PA2,3,4,5,6,7
+    GPIO_PORTA_DEN_R |= 0xEC;  // @TODO - Set to xFC to enable PA4
+    
+    // Configure the PMCn fileds in the GPIOCTL register to assign the SSI signals to the appropriate pins
+    
+    // Set PA2, PA3 and PA5 as SSI (function 2)
+    GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0xFF0F00FF) + 0x00202200;
+    
+    // Set PA4, PA6 and PA7 as GPIO (function 0)
+    GPIO_PORTA_GPIOCTL_R = (GPIO_PORTA_GPIOCTL_R & 0x00F0FFFF); //@TODO Consider not setting PA4
+    
+    // disable analog functionality on PA2,3,5,6,7
+    GPIO_PORTA_AMSEL_R &= ~0xEC;
+    
+    // Having enabled SSI0, we now need to configure it...
+    
+    // Clear the SEE bit in the SSICR1 register
+    SSI0_CR1_R &= 0x1D;
+    
+    // Select SSI master mode (set SSICR1 to 0x00000000)
+    SSI0_CR1_R &= 0xFB; 
+    
+    // Configure the SSI clock source to the whatever the system clock is, and not the software controled precision oscillator
+    SSI0_CCR_R = 0x0;
+    
+    // Configure the clock prescale divisor by writing the SSICPRS register
+    // The final bit rate will be = sysclock speed / (PsD * (1 + SCR)) (see below for SCR details)
+    // We assume the interal clock is set to 50MHz, and divide by 16 for a bus speed of 3.125MHz
+    SSI0_SSICPS_R = (SSI0_SSICPS_R & 0xFFFFFF00)+ 0x10;
+    
+    // Write the SSICR0 register with:
+    
+    //  - the Serial Clock Rate (SCR) (we will set to 0)
+    SSI0_CR0_R = (SSI0_CR0_R & 0x00000FFF) +
+    //  - the clock phase (SPH) (set to 0x0, as we wish to capture data on the second clock edge transition)
+        (0<<7) +
+    //  - and polarity (SPO) (set to 0x0, as the clock should be LOW when no data is being transfered)
+        (0<<6) +
+    //  - the protocol (FRF) mode to be Freescale SPI (0x0)
+        (0<<4) +
+    //  - the data size (DSS) (8 bits)
+        0x7;
+    
+    // Finally, now we're done configuring, set the SEE bit in the SSICR1 register
+    SSI0_CR1_R |= 0x02;
 }
 
 /**
@@ -139,20 +139,20 @@ void TM4C123_SSI_Init() {
  */ 
 
 void Nokia_Write(char data, bool isCmd) {
-	// In sending a command, wait until the SSI0 FIFO buffer is free
-	while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
-	if(isCmd){
-		// Set the DC line (PA 6) to low
-		GPIO_PORTA_DATA_R &= ~GPIO_PORTA_6_ENABLE;
-	}else{
-		// Set the DC line (PA 6) to low
-		GPIO_PORTA_DATA_R |= GPIO_PORTA_6_ENABLE;
-	}
-	
-	// Write the data
-	SSI0_DATA_R = data;
-	// Wait again until the buffer is free
-	while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
+    // In sending a command, wait until the SSI0 FIFO buffer is free
+    while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
+    if(isCmd){
+        // Set the DC line (PA 6) to low
+        GPIO_PORTA_DATA_R &= ~GPIO_PORTA_6_ENABLE;
+    }else{
+        // Set the DC line (PA 6) to low
+        GPIO_PORTA_DATA_R |= GPIO_PORTA_6_ENABLE;
+    }
+    
+    // Write the data
+    SSI0_DATA_R = data;
+    // Wait again until the buffer is free
+    while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
 }
 
 unsigned char Reverse_bits(unsigned char num){
@@ -176,18 +176,18 @@ unsigned char Reverse_bits(unsigned char num){
  */
 
 void Nokia_InitDisplay() {
-	TM4C123_SSI_Init();
-	
-	GPIO_PORTA_DATA_R = 0x00;
-	for(unsigned long delay=0; delay<10; delay=delay+1); // @TODO - Need a smarter way to do this
-	GPIO_PORTA_DATA_R = GPIO_PORTA_7_ENABLE;
-	
-	Nokia_Write(0x21, true); // Enable LCD extended commands
-	Nokia_Write(0xC0, true); // Set Vop (contrast)
+    TM4C123_SSI_Init();
+    
+    GPIO_PORTA_DATA_R = 0x00;
+    for(unsigned long delay=0; delay<10; delay=delay+1); // @TODO - Need a smarter way to do this
+    GPIO_PORTA_DATA_R = GPIO_PORTA_7_ENABLE;
+    
+    Nokia_Write(0x21, true); // Enable LCD extended commands
+    Nokia_Write(0xC0, true); // Set Vop (contrast)
     Nokia_Write(0x04, true); // Set temp coefficient
-	Nokia_Write(0x14, true); // LCD Bias Mode 1:40
-	Nokia_Write(0x20, true); // Back to the basic command set
-	Nokia_Write(0x0c, true);
+    Nokia_Write(0x14, true); // LCD Bias Mode 1:40
+    Nokia_Write(0x20, true); // Back to the basic command set
+    Nokia_Write(0x0c, true);
 }
 
 void Nokia_ClearScreen(void) {
@@ -200,9 +200,9 @@ void Nokia_ClearScreen(void) {
 
 //@TODO - Do this from a pointer...
 void Nokia_WriteImg(char img[84][6]) {
-	//Nokia_Write(0x40, true); // Set cursor to 0,0
-	//Nokia_Write(0x80, true); // Set cursor to 0,0
-	// Write the image
+    //Nokia_Write(0x40, true); // Set cursor to 0,0
+    //Nokia_Write(0x80, true); // Set cursor to 0,0
+    // Write the image
     for(unsigned short row=0; row<6; row=row+1){
         for(unsigned short col=0; col<84; col=col+1){
             Nokia_Write(Reverse_bits(img[col][row]), false);

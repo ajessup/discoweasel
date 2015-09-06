@@ -11,7 +11,7 @@
 // Outputs: None
 // Notes: These five pins are connected to hardware on the LaunchPad
 void PortF_Init(void){
-    f4_push_count = 1;
+    pf4_push_count = 1;
     //volatile unsigned long delay;
     SYSCTL_RCGC2_R |= 0x00000020;     // 1) F clock @TODO This is a legacy register, should switch for the correct ones
     //delay = SYSCTL_RCGC2_R;           // delay   

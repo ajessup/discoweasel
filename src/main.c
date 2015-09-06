@@ -16,7 +16,7 @@
 unsigned long SW1, SW1_prev,SW2;  // input from PF4,PF0
 unsigned long Out;      // outputs to PF3,PF2,PF1 (multicolor LED)
 
-
+unsigned long pf4_push_count;
 
 // 3. Subroutines Section
 // MAIN: Mandatory for a C Program to be executable
@@ -32,7 +32,7 @@ int main(void){
 
   // Show scrooge while loading...
   //DisableInterupts();
-  //Nokia_WriteImg(scroogeImg);
+  Nokia_WriteImg(scroogeImg);
   
 
   // Enable interrupts
@@ -73,11 +73,17 @@ int main(void){
         if(currentRead.readCount == SAMPLE_LENGTH) {
             // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
             for(int i=0;i<80;i++){
-                unsigned short scaledSample = currentRead.samples[i] >> 7;
-                for(int j=0;j<scaledSample;j++){
-                    short multiple = (j / 6);
-                    screenbuffer[i][multiple] |= (0x1 << (j-(multiple*6)));
-                }
+				long scaledSample = (currentRead.samples[i] >> 7);
+				for(short j=0;j<6;j++){
+					long segmentVal = scaledSample - (j*8);
+					if(segmentVal < 0){
+						screenbuffer[i][5-j] = 0x00;
+					}else if(segmentVal > 8){
+						screenbuffer[i][5-j] = 0xFF;
+					}else{
+						screenbuffer[i][5-j] = ((char)1 << segmentVal)-1;
+					}
+				}
             }
             currentRead.readCount = 0;
             //Nokia_ClearScreen();
@@ -89,4 +95,6 @@ int main(void){
 }
 
 
-
+int logicalRightShift(int x, int n) {
+    return (unsigned)x >> n;
+}

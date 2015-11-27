@@ -3,15 +3,18 @@
  * @author "Andrew Jessup" <ajessup@gmail.com>
  *
  * A C implementation of the radix 2 cooley/tukey fft algorithm, adapted from
- * the python implementation presented by jaime.frio@gmail.com at https://goo.gl/mcN8Bv
+ * the python implementation presented by jaime.frio AT gmail.com at https://goo.gl/mcN8Bv
  **/ 
 
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
 #include <stdio.h>
+#include "fft.h"
 
-#define DC_SIZE sizeof(double complex)
+#ifndef M_PI
+ #define M_PI   3.14159265358979323846264338327950288
+#endif
 
 /**
  * Perform the fast fourier transform on a signal input
@@ -23,7 +26,7 @@
  *   an array of size `length` transformed from `input`
  */
 double complex * calc_fft(double complex input[], int length) {
-    double complex *twiddles = (double complex *)calloc(length/2, DC_SIZE);
+    double complex *twiddles = (double complex *)calloc(length/2, sizeof(double complex));
     for(int i=0;i<length/2;i++){
         double complex J = 2.0 * I;
         *(twiddles + i) =
@@ -41,7 +44,7 @@ double complex * calc_fft(double complex input[], int length) {
  *   origlength, length used to comptue the twiddle factors
  */
 double complex* _fft(double complex input[], double complex twiddles[], int length, int origlength) {
-    double complex *result = (double complex*)calloc(length, DC_SIZE);
+    double complex *result = (double complex*)calloc(length, sizeof(double complex));
 
     if(length % 2){
         return dft(input, length);
@@ -49,8 +52,8 @@ double complex* _fft(double complex input[], double complex twiddles[], int leng
 
     int halflength = floor(length / 2);
 
-    double complex *input_even = (double complex*)calloc(halflength, DC_SIZE);
-    double complex *input_odd = (double complex*)calloc(halflength, DC_SIZE);
+    double complex *input_even = (double complex*)calloc(halflength, sizeof(double complex));
+    double complex *input_odd = (double complex*)calloc(halflength, sizeof(double complex));
 
     for(int i=0;i<length;i++) {
         if(i % 2){
@@ -60,8 +63,8 @@ double complex* _fft(double complex input[], double complex twiddles[], int leng
         }
     }
 
-    double complex *output_even = fft(input_even, twiddles, halflength, origlength);
-    double complex *output_odd = fft(input_odd, twiddles, halflength, origlength);
+    double complex *output_even = _fft(input_even, twiddles, halflength, origlength);
+    double complex *output_odd = _fft(input_odd, twiddles, halflength, origlength);
 
     for(int k=0;k<halflength;k++){
         *(result+k) = *(result+k) +
@@ -91,7 +94,7 @@ double complex* _fft(double complex input[], double complex twiddles[], int leng
  *   an array of size `length` transformed from `input` 
  */
 double complex* dft(double complex input[], int length) {
-    double complex *result = (double complex *)calloc(length, DC_SIZE);
+    double complex *result = (double complex *)calloc(length, sizeof(double complex));
 
     if(length == 1){
         *(result) = input[0];
@@ -109,7 +112,7 @@ double complex* dft(double complex input[], int length) {
         *(result+2) = a - c;
         *(result+3) = b - (1.0 * I * d);
     }else{
-        double complex *twiddles = (double complex *)calloc(length, DC_SIZE);
+        double complex *twiddles = (double complex *)calloc(length, sizeof(double complex));
         // Calculate the first half of the twiddle factors
         for(int k=0;k<(floor(length/2)+1);k++){
         //     twiddles = [math.e**(inv*2j*math.pi*k/N) for k in xrange(M)]+[N]

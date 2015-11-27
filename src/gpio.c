@@ -1,5 +1,7 @@
+#include <complex.h>
 #include "gpio.h"
 #include "tm4c123gh6pm.h"
+
 
 // @TODO This isn't the gpio file, it's the onboard buttons and switches file - should prob. refactor
 // the GPIO init functions into their own file
@@ -85,7 +87,7 @@ void PortE_Init(void){
 void ADC_Seq3_ISR(void) {
     ADC0_ISC_R = 0x08;     // Acknowledge and reset the interrupt
     if(currentRead.readCount < SAMPLE_LENGTH){
-        currentRead.samples[currentRead.readCount] = ADC0_SSFIFO3_R;
+        currentRead.samples[currentRead.readCount] = (double complex)ADC0_SSFIFO3_R;
         currentRead.readCount++;
     }
 }

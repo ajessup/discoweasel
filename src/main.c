@@ -5,11 +5,16 @@
 // blue LED connected to PF2 on the Launchpad
 // green LED connected to PF3 on the Launchpad
 
+#include <complex.h>
+#include <math.h>
+#include <stdlib.h>
+
 #include "gpio.h"
 #include "tm4c123gh6pm.h"
 #include "nokia.h"
 #include "scrooge.h"
-#include <math.h>
+#include "fft.h"
+
 
 // 2. Declarations Section
 //   Global Variables
@@ -31,67 +36,69 @@ int main(void){
   Nokia_InitDisplay();
 
   // Show scrooge while loading...
-  //DisableInterupts();
   Nokia_WriteImg(scroogeImg);
-  
 
   // Enable interrupts
   EnableInterupts();
-  
-    while(1){
-        DisableInterupts();
-        short color = pf4_push_count % 8;
-        switch(color){
-            case 0:
-                GPIO_PORTF_DATA_R = 0x02;
-                break;
-            case 1:
-                GPIO_PORTF_DATA_R = 0x04;
-                break;
-            case 2:
-                GPIO_PORTF_DATA_R = 0x08;
-                break;
-            case 3:
-                GPIO_PORTF_DATA_R = 0x0A;
-                break;
-            case 4:
-                GPIO_PORTF_DATA_R = 0x0C;
-                break;
-            case 5:
-                GPIO_PORTF_DATA_R = 0x0E;
-                break;
-            case 6:
-                GPIO_PORTF_DATA_R = 0x06;
-                break;
-            case 7:
-            default:
-                GPIO_PORTF_DATA_R = 0x00;
-                break;
-        }
 
-        // Read in audio samples, and if we have something write it to the screen
-        if(currentRead.readCount == SAMPLE_LENGTH) {
-            // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
-            for(int i=0;i<80;i++){
-				long scaledSample = (currentRead.samples[i] >> 7);
-				for(short j=0;j<6;j++){
-					long segmentVal = scaledSample - (j*8);
-					if(segmentVal < 0){
-						screenbuffer[i][5-j] = 0x00;
-					}else if(segmentVal > 8){
-						screenbuffer[i][5-j] = 0xFF;
-					}else{
-						screenbuffer[i][5-j] = ((char)1 << segmentVal)-1;
-					}
-				}
-            }
-            currentRead.readCount = 0;
-            //Nokia_ClearScreen();
-            Nokia_WriteImg(screenbuffer);
-        }
-        EnableInterupts();
-        WaitForInterrupt();
+  while(1){
+    DisableInterupts();
+    short color = pf4_push_count % 8;
+    switch(color){
+        case 0:
+            GPIO_PORTF_DATA_R = 0x02;
+            break;
+        case 1:
+            GPIO_PORTF_DATA_R = 0x04;
+            break;
+        case 2:
+            GPIO_PORTF_DATA_R = 0x08;
+            break;
+        case 3:
+            GPIO_PORTF_DATA_R = 0x0A;
+            break;
+        case 4:
+            GPIO_PORTF_DATA_R = 0x0C;
+            break;
+        case 5:
+            GPIO_PORTF_DATA_R = 0x0E;
+            break;
+        case 6:
+            GPIO_PORTF_DATA_R = 0x06;
+            break;
+        case 7:
+        default:
+            GPIO_PORTF_DATA_R = 0x00;
+            break;
     }
+
+    // Read in audio samples, and if we have something write it to the screen
+    if(currentRead.readCount == SAMPLE_LENGTH) {
+        double complex * transform;
+        transform = calc_fft(currentRead.samples, SAMPLE_LENGTH);
+
+        // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
+        for(int i=0;i<80;i++){
+  				long scaledSample = (abs(creal(transform[i])) >> 7);
+  				for(short j=0;j<6;j++){
+  					long segmentVal = scaledSample - (j*8);
+  					if(segmentVal < 0){
+  						screenbuffer[i][5-j] = 0x00;
+  					}else if(segmentVal > 8){
+  						screenbuffer[i][5-j] = 0xFF;
+  					}else{
+  						screenbuffer[i][5-j] = ((char)1 << segmentVal)-1;
+  					}
+  				}
+        }
+        currentRead.readCount = 0;
+        //Nokia_ClearScreen();
+        Nokia_WriteImg(screenbuffer);
+        free(transform);
+    }
+    EnableInterupts();
+    WaitForInterrupt();
+  }
 }
 
 

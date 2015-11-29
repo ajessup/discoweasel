@@ -10,12 +10,12 @@
 #define FUDGE_1         0.4
 #define FUDGE_2         2.0
 
-void assert_f(double test, double expected, double epsilon);
+void assert_f(float test, float expected, float epsilon);
 
 int main(void) {
     // Compute an array that is a sine wave
-    complex double wave[SAMPLE_LENGTH];
-    double complex *transform;
+    complex float wave[SAMPLE_LENGTH];
+    float complex *transform;
 
     Heap_Init();
 
@@ -24,8 +24,8 @@ int main(void) {
     // Compute two superimposed sine waves
     for(int i=0;i<SAMPLE_LENGTH;i++){
         wave[i] = 
-              (int)(sin(((double)i)*FUDGE_1) * BASE)
-            + (int)(sin(((double)i)*FUDGE_2) * BASE)
+              (int)(sin(((float)i)*FUDGE_1) * BASE)
+            + (int)(sin(((float)i)*FUDGE_2) * BASE)
             + BASE;
     }
 
@@ -41,7 +41,7 @@ int main(void) {
     assert_f(fabs(creal(*(transform+33))),1956.0641,0.001);
 
     assert_f(creal(wave[120]),1766.000000,0.001);
-    assert_f(fabs(creal(*(transform+120))),42704.6201,0.001);
+    assert_f(fabs(creal(*(transform+120))),42704.632812,0.001);
 
     printf(" OK!\n");
 
@@ -52,10 +52,10 @@ int main(void) {
  * Assert two floating point values are the same, and exit gracefully
  * if they are not.
  */
-void assert_f(double test, double expected, double epsilon){
+void assert_f(float test, float expected, float epsilon){
     if(fabs(test - expected)>epsilon){
         printf("Fail\n");
-        printf("  Expecting %f [+/- %f], got %f\n", test, epsilon, expected);
+        printf("  Expecting %f [+/- %f], got %f\n", expected, epsilon, test);
         exit(0);
     }else{
         printf(".");

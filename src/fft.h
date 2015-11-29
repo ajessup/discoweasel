@@ -1,5 +1,5 @@
 #include <complex.h>
 
-double complex * calc_fft(double complex input[], int length);
-double complex * _fft(double complex input[], double complex twiddles[], int length, int origlength);
-double complex * dft(double complex input[], int length);
+float complex * calc_fft(float complex input[], int length);
+float complex * _fft(float complex input[], float complex twiddles[], int length, int origlength);
+float complex * dft(float complex input[], int length);

@@ -88,7 +88,7 @@ int main(void){
   stats = Heap_Stats();
 
   for(i = 0; i <= HEAP_SIZE_WORDS; i++){
-    ptr = Heap_Malloc(sizeof(int16_t));
+    ptr = Heap_Malloc(sizeof(int32_t));
   }
   status = Heap_Test();
   stats = Heap_Stats();

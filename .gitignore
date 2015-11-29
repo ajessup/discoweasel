@@ -9,3 +9,6 @@ util/imgconvert/lib*
 util/imgconvert/include*
 .Python
 *.pyc
+tests/test_ffc
+tests/test_heap
+tests/*.dSYM

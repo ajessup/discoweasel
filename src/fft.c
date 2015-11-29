@@ -11,6 +11,7 @@
 #include <complex.h>
 #include <stdio.h>
 #include "fft.h"
+#include "heap.h"
 
 #ifndef M_PI
  #define M_PI   3.14159265358979323846264338327950288
@@ -23,17 +24,20 @@
  *   input, raw signal values, encoded in the real portion of absolute numbers
  *   length, the number of elements in the input array
  * returns:
- *   an array of size `length` transformed from `input`
+ *   an array of size `length` transformed from `input` OR NULL if OOM
  */
 double complex * calc_fft(double complex input[], int length) {
-    double complex *twiddles = (double complex *)calloc(length/2, sizeof(double complex));
+    double complex *twiddles = (double complex *)Heap_Calloc(length / 2 * sizeof(double complex));
+    if(twiddles==NULL){
+        return NULL;
+    }
     for(int i=0;i<length/2;i++){
         double complex J = 2.0 * I;
         *(twiddles + i) =
             cexp(((double complex)M_PI * (double complex)i * J) / (double complex)length);
     }
     return _fft(input, twiddles, length, length);
-    free(twiddles);
+    Heap_Free(twiddles);
 }
 
 /**
@@ -44,7 +48,7 @@ double complex * calc_fft(double complex input[], int length) {
  *   origlength, length used to comptue the twiddle factors
  */
 double complex* _fft(double complex input[], double complex twiddles[], int length, int origlength) {
-    double complex *result = (double complex*)calloc(length, sizeof(double complex));
+    double complex *result = (double complex*)Heap_Calloc(length * sizeof(double complex));
 
     if(length % 2){
         return dft(input, length);
@@ -52,8 +56,8 @@ double complex* _fft(double complex input[], double complex twiddles[], int leng
 
     int halflength = floor(length / 2);
 
-    double complex *input_even = (double complex*)calloc(halflength, sizeof(double complex));
-    double complex *input_odd = (double complex*)calloc(halflength, sizeof(double complex));
+    double complex *input_even = (double complex*)Heap_Calloc(halflength * sizeof(double complex));
+    double complex *input_odd = (double complex*)Heap_Calloc(halflength * sizeof(double complex));
 
     for(int i=0;i<length;i++) {
         if(i % 2){
@@ -76,10 +80,10 @@ double complex* _fft(double complex input[], double complex twiddles[], int leng
             ( *(output_even + (k-halflength)) - *(output_odd + (k-halflength)) * twiddles[(k-halflength) * origlength / length] );
     }
 
-    free(input_even);
-    free(input_odd);
-    free(output_even);
-    free(output_odd);
+    Heap_Free(input_even);
+    Heap_Free(input_odd);
+    Heap_Free(output_even);
+    Heap_Free(output_odd);
 
     return result;
 }
@@ -94,7 +98,7 @@ double complex* _fft(double complex input[], double complex twiddles[], int leng
  *   an array of size `length` transformed from `input` 
  */
 double complex* dft(double complex input[], int length) {
-    double complex *result = (double complex *)calloc(length, sizeof(double complex));
+    double complex *result = (double complex *)Heap_Calloc(length * sizeof(double complex));
 
     if(length == 1){
         *(result) = input[0];
@@ -112,7 +116,7 @@ double complex* dft(double complex input[], int length) {
         *(result+2) = a - c;
         *(result+3) = b - (1.0 * I * d);
     }else{
-        double complex *twiddles = (double complex *)calloc(length, sizeof(double complex));
+        double complex *twiddles = (double complex *)Heap_Calloc(length * sizeof(double complex));
         // Calculate the first half of the twiddle factors
         for(int k=0;k<(floor(length/2)+1);k++){
         //     twiddles = [math.e**(inv*2j*math.pi*k/N) for k in xrange(M)]+[N]

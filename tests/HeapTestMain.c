@@ -22,7 +22,11 @@
  http://users.ece.utexas.edu/~valvano/
  */
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "heap.h"
+
+void printStats(void);
 
 // global so easier to see with the debugger
 // Proper style would be to make these variables local to main.
@@ -44,13 +48,17 @@ heap_stats_t stats;
 int main(void){
   int16_t i;
 
+  printStats();
   status = Heap_Init();
 
+  printStats();
   ptr = Heap_Malloc(sizeof(int16_t));
   *ptr = 0x1111;
+  
   status = Heap_Test();
 
   status = Heap_Free(ptr);
+
   status = Heap_Test();
 
   ptr = Heap_Malloc(1);
@@ -109,8 +117,13 @@ int main(void){
   status = Heap_Test();
 
   status = Heap_Init();
-  maxBlockSize = HEAP_SIZE_BYTES - 2 * sizeof(int16_t);
+  maxBlockSize = HEAP_SIZE_BYTES - 2 * sizeof(int32_t);
   bigBlock = Heap_Malloc(maxBlockSize);
+  if(bigBlock == NULL){
+    printf("Error - Could not allocate %d bytes\n", maxBlockSize);
+    printStats();
+    exit(1);
+  }
   for(i = 0; i < maxBlockSize; i++){
     bigBlock[i] = 0xFF;
   }
@@ -120,6 +133,11 @@ int main(void){
   bigBlock = Heap_Calloc(maxBlockSize);
   status = Heap_Test();
   stats = Heap_Stats();
-  for(;;){
-  } 
+  exit(0);
+}
+
+void printStats(void) {
+    stats = Heap_Stats();
+    printf("  WORDS  Alloc: %d Avail: %d Overhead: %d\n", stats.wordsAllocated, stats.wordsAvailable, stats.wordsOverhead);
+    printf("  BLOCKS Used: %d Unused: %d\n", stats.blocksUsed, stats.blocksUnused);
 }

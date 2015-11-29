@@ -9,6 +9,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "heap.h"
 #include "gpio.h"
 #include "tm4c123gh6pm.h"
 #include "nokia.h"
@@ -74,7 +75,7 @@ int main(void){
 
     // Read in audio samples, and if we have something write it to the screen
     if(currentRead.readCount == SAMPLE_LENGTH) {
-        double complex * transform;
+        float complex * transform;
         transform = calc_fft(currentRead.samples, SAMPLE_LENGTH);
 
         // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
@@ -94,7 +95,7 @@ int main(void){
         currentRead.readCount = 0;
         //Nokia_ClearScreen();
         Nokia_WriteImg(screenbuffer);
-        free(transform);
+        Heap_Free(transform);
     }
     EnableInterupts();
     WaitForInterrupt();

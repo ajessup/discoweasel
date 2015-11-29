@@ -87,7 +87,7 @@ void PortE_Init(void){
 void ADC_Seq3_ISR(void) {
     ADC0_ISC_R = 0x08;     // Acknowledge and reset the interrupt
     if(currentRead.readCount < SAMPLE_LENGTH){
-        currentRead.samples[currentRead.readCount] = (double complex)ADC0_SSFIFO3_R;
+        currentRead.samples[currentRead.readCount] = (float complex)ADC0_SSFIFO3_R;
         currentRead.readCount++;
     }
 }

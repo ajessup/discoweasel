@@ -14,7 +14,7 @@
 #include "heap.h"
 
 #ifndef M_PI
- #define M_PI   3.14159265358979323846264338327950288
+ #define M_PI   3.14159265358979323846264338327950288f
 #endif
 
 /**
@@ -112,15 +112,15 @@ float complex* dft(float complex input[], int length) {
         float complex d = (input[1] - input[3]);
 
         *(result) = a + c;
-        *(result+1) = b + (1.0 * I * d);
+        *(result+1) = b + (1.0f * I * d);
         *(result+2) = a - c;
-        *(result+3) = b - (1.0 * I * d);
+        *(result+3) = b - (1.0f * I * d);
     }else{
         float complex *twiddles = (float complex *)Heap_Calloc(length * sizeof(float complex));
         // Calculate the first half of the twiddle factors
-        for(int k=0;k<(floor(length/2)+1);k++){
+        for(int k=0;k<(floor(length/2.0f)+1);k++){
         //     twiddles = [math.e**(inv*2j*math.pi*k/N) for k in xrange(M)]+[N]
-            float complex J = 2.0 * I;
+            float complex J = 2.0f * I;
             *(twiddles + k) =
                 cexp(((float complex)M_PI * (float complex)k * J) / (float complex)length);
         }

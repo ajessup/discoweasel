@@ -12,7 +12,7 @@ TARGET = main
 # MCU: part number to build for
 MCU = TM4C123GH6PM
 # SOURCES: list of input source sources
-SOURCES = fft.c nokia.c gpio.c main.c startup_gcc.c
+SOURCES = heap.c fft.c nokia.c gpio.c main.c startup_gcc.c
 # INCLUDES: list of includes, by default, use Includes directory
 INCLUDES = -IInclude
 # OUTDIR: directory to use for output

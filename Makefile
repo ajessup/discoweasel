@@ -29,7 +29,7 @@ CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
 # LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
-LDFLAGS = -T $(LD_SCRIPT) --entry main --gc-sections
+LDFLAGS = -Wl,--script=$(LD_SCRIPT) -Wl,--entry=main -Wl,-lm -Wl,--gc-sections
 
 #######################################
 # end of user configuration
@@ -39,7 +39,7 @@ LDFLAGS = -T $(LD_SCRIPT) --entry main --gc-sections
 # binaries
 #######################################
 CC = arm-none-eabi-gcc
-LD = arm-none-eabi-ld
+LD = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 RM      = rm -f
 MKDIR	= mkdir -p

@@ -29,7 +29,7 @@ CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall -O
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
 # LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
-LDFLAGS = -L/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb -L/Users/jessup/arm-cs-tools/lib/gcc/arm-none-eabi/4.8.3/thumb --script=$(LD_SCRIPT) --entry=main -rpath=/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc --gc-sections
+LDFLAGS = -L/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb2 -L/Users/jessup/arm-cs-tools/lib/gcc/arm-none-eabi/4.8.3/thumb2 --script=$(LD_SCRIPT) --entry=main -rpath=/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc --gc-sections
 
 #######################################
 # end of user configuration

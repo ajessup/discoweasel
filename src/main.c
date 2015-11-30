@@ -27,6 +27,7 @@ unsigned long pf4_push_count;
 // 3. Subroutines Section
 // MAIN: Mandatory for a C Program to be executable
 int main(void){
+  DisableInterupts();
   //unsigned short mode=0;
   char screenbuffer[84][6];
 
@@ -35,6 +36,8 @@ int main(void){
   PortE_Init();        // Init ADC and PE3
     
   Nokia_InitDisplay();
+
+  Heap_Init();
 
   // Show scrooge while loading...
   Nokia_WriteImg(scroogeImg);

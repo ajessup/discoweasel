@@ -28,6 +28,7 @@
  */
 float complex * calc_fft(float complex input[], int length) {
     float complex *twiddles = (float complex *)Heap_Calloc(length / 2 * sizeof(float complex));
+    float complex *result;
     if(twiddles==NULL){
         return NULL;
     }
@@ -36,8 +37,9 @@ float complex * calc_fft(float complex input[], int length) {
         *(twiddles + i) =
             cexp(((float complex)M_PI * (float complex)i * J) / (float complex)length);
     }
-    return _fft(input, twiddles, length, length);
+    result = _fft(input, twiddles, length, length);
     Heap_Free(twiddles);
+    return result;
 }
 
 /**
@@ -48,8 +50,6 @@ float complex * calc_fft(float complex input[], int length) {
  *   origlength, length used to comptue the twiddle factors
  */
 float complex* _fft(float complex input[], float complex twiddles[], int length, int origlength) {
-    float complex *result = (float complex*)Heap_Calloc(length * sizeof(float complex));
-
     if(length % 2){
         return dft(input, length);
     }
@@ -58,6 +58,9 @@ float complex* _fft(float complex input[], float complex twiddles[], int length,
 
     float complex *input_even = (float complex*)Heap_Calloc(halflength * sizeof(float complex));
     float complex *input_odd = (float complex*)Heap_Calloc(halflength * sizeof(float complex));
+    if((input_even==NULL)||(input_odd==NULL)){
+        return NULL;
+    }
 
     for(int i=0;i<length;i++) {
         if(i % 2){
@@ -69,7 +72,14 @@ float complex* _fft(float complex input[], float complex twiddles[], int length,
 
     float complex *output_even = _fft(input_even, twiddles, halflength, origlength);
     float complex *output_odd = _fft(input_odd, twiddles, halflength, origlength);
+    if((output_even==NULL)||(output_odd==NULL)){
+        return NULL;
+    }
 
+    float complex *result = (float complex*)Heap_Calloc(length * sizeof(float complex));
+    if(result==NULL){
+        return NULL;
+    }
     for(int k=0;k<halflength;k++){
         *(result+k) = *(result+k) +
             ( *(output_even + k) + *(output_odd + k) * twiddles[k * origlength / length] );
@@ -99,6 +109,9 @@ float complex* _fft(float complex input[], float complex twiddles[], int length,
  */
 float complex* dft(float complex input[], int length) {
     float complex *result = (float complex *)Heap_Calloc(length * sizeof(float complex));
+    if(result==NULL){
+        return NULL;
+    }
 
     if(length == 1){
         *(result) = input[0];
@@ -117,6 +130,9 @@ float complex* dft(float complex input[], int length) {
         *(result+3) = b - (1.0f * I * d);
     }else{
         float complex *twiddles = (float complex *)Heap_Calloc(length * sizeof(float complex));
+        if(twiddles==NULL){
+            return NULL;
+        }       
         // Calculate the first half of the twiddle factors
         for(int k=0;k<(floor(length/2.0f)+1);k++){
         //     twiddles = [math.e**(inv*2j*math.pi*k/N) for k in xrange(M)]+[N]
@@ -138,6 +154,7 @@ float complex* dft(float complex input[], int length) {
                       + (input[n] * *(twiddles + (n * k % length)));
             }
         }
+        Heap_Free(twiddles);
     }
     return result;
 }

@@ -25,11 +25,11 @@ LD_SCRIPT = $(MCU).ld
 
 # define flags
 CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
-CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
+CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall -O
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
 # LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
-LDFLAGS = -Wl,--script=$(LD_SCRIPT) -Wl,--entry=main -Wl,-lm -Wl,--gc-sections
+LDFLAGS = -L/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb -L/Users/jessup/arm-cs-tools/lib/gcc/arm-none-eabi/4.8.3/thumb --script=$(LD_SCRIPT) --entry=main -rpath=/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc --gc-sections
 
 #######################################
 # end of user configuration
@@ -39,7 +39,7 @@ LDFLAGS = -Wl,--script=$(LD_SCRIPT) -Wl,--entry=main -Wl,-lm -Wl,--gc-sections
 # binaries
 #######################################
 CC = arm-none-eabi-gcc
-LD = arm-none-eabi-gcc
+LD = arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 RM      = rm -f
 MKDIR	= mkdir -p

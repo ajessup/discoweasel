@@ -65,7 +65,7 @@ void PortE_Init(void){
     TIMER0_CTL_R |= 0x01;        // Enable the timer
 
     // Now set up ADC0
-    ADC0_PC_R = 0x01;  // Peripheral control register. Set to sample at 125kHz (p 888
+    ADC0_PC_R = 0x01;  // Peripheral control register. Set to sample at 125kHz (p 888)
 
     // We're going to use sequencer 3 (the simplest one, only takes one sample)
     ADC0_ACTSS_R &= ~0x08; // ...first disable it by writing a 0 to bit 3 in ADC_ACTSS_R
@@ -81,14 +81,27 @@ void PortE_Init(void){
         (NVIC_PRI4_R&0xFFFF00FF)|0x00004000; // Set the interrupt handler for ADC0 seq. 3 to priorty 2
     NVIC_EN0_R = 1<<17;    // Enable ADC0 seq 3 interrupts
 
+    samples.readCount = 0;
     currentRead.readCount = 0;
 }
 
 void ADC_Seq3_ISR(void) {
     ADC0_ISC_R = 0x08;     // Acknowledge and reset the interrupt
     if(currentRead.readCount < SAMPLE_LENGTH){
-        currentRead.samples[currentRead.readCount] = (float complex)ADC0_SSFIFO3_R;
+        currentRead.samples[currentRead.readCount] = (int)ADC0_SSFIFO3_R;
         currentRead.readCount++;
+    }else{
+        // Get a rolling average of the values in currenRead and add to the samples array
+        if(samples.readCount < SEQUENCE_LENGTH){
+            unsigned long complex sum = 0;
+            for(int i=0;i<SAMPLE_LENGTH;i++){
+                sum += currentRead.samples[i];
+            }
+            float complex sample_average = sum/SAMPLE_LENGTH;
+            samples.samples[samples.readCount] = sample_average;
+            samples.readCount++;
+            currentRead.readCount = 0;
+        }
     }
 }
 

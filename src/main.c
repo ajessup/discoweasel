@@ -77,9 +77,9 @@ int main(void){
     }
 
     // Read in audio samples, and if we have something write it to the screen
-    if(currentRead.readCount == SAMPLE_LENGTH) {
+    if(samples.readCount == SEQUENCE_LENGTH) {
         float complex * transform;
-        transform = calc_fft(currentRead.samples, SAMPLE_LENGTH);
+        transform = calc_fft(samples.samples, SEQUENCE_LENGTH);
 
         // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
         for(int i=0;i<80;i++){
@@ -95,7 +95,7 @@ int main(void){
   					}
   				}
         }
-        currentRead.readCount = 0;
+        samples.readCount = 0;
         //Nokia_ClearScreen();
         Nokia_WriteImg(screenbuffer);
         Heap_Free(transform);

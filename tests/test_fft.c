@@ -5,7 +5,7 @@
 #include "fft.h"
 #include "heap.h"
 
-#define SAMPLE_LENGTH   128
+#define SEQUENCE_LENGTH   128
 #define BASE            1500
 #define FUDGE_1         0.4
 #define FUDGE_2         2.0
@@ -14,7 +14,7 @@ void assert_f(float test, float expected, float epsilon);
 
 int main(void) {
     // Compute an array that is a sine wave
-    complex float wave[SAMPLE_LENGTH];
+    complex float wave[SEQUENCE_LENGTH];
     float complex *transform;
 
     Heap_Init();
@@ -22,7 +22,7 @@ int main(void) {
     printf("Running tests for FFT: ");
 
     // Compute two superimposed sine waves
-    for(int i=0;i<SAMPLE_LENGTH;i++){
+    for(int i=0;i<SEQUENCE_LENGTH;i++){
         wave[i] = 
               (int)(sin(((float)i)*FUDGE_1) * BASE)
             + (int)(sin(((float)i)*FUDGE_2) * BASE)
@@ -30,9 +30,9 @@ int main(void) {
     }
 
     // Calc the FT
-    transform = calc_fft(wave, SAMPLE_LENGTH);
+    transform = calc_fft(wave, SEQUENCE_LENGTH);
     if(transform == NULL){
-        printf("\nFAIL: Error calculating FFT (Out of Memory?) for sample legnth %d\n", SAMPLE_LENGTH);
+        printf("\nFAIL: Error calculating FFT (Out of Memory?) for sample legnth %d\n", SEQUENCE_LENGTH);
         exit(1);
     }
 

@@ -81,9 +81,12 @@ int main(void){
 
         // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
         for(short current_bucket=0;current_bucket<NUM_BUCKETS;current_bucket++){
+            unsigned long bucket_total = 0;
             for(short bucket_pos=0;bucket_pos<BUCKET_SIZE;bucket_pos++){
                 short col_pos = (current_bucket*BUCKET_SIZE)+bucket_pos;
-                long scaledSample = (abs(creal(transform[col_pos])) >> 7);
+                unsigned long sample = abs(creal(transform[col_pos]));
+                short scaledSample = sample >> 7;
+                bucket_total += sample;
 
                 // Draw the column
                 for(short j=0;j<NOKIA_SCREEN_ROWS;j++){
@@ -94,12 +97,19 @@ int main(void){
                    }
                 }
 
+                // Draw the bucket boundary
                 if(bucket_pos==0){
                    for(short j=0;j<NOKIA_SCREEN_ROWS;j++){
                      screenbuffer[col_pos][j] = screenbuffer[col_pos][j] || (j % 2);
                    }
                 } 
             }
+            unsigned long bucket_average = floor(bucket_total / BUCKET_SIZE);
+            short scaled_bucket_average = bucket_average >> 7;
+            for(short j=(BUCKET_SIZE*current_bucket);j<(BUCKET_SIZE*(current_bucket+1));j++){
+               screenbuffer[j][scaled_bucket_average] = true;
+            }
+
         }
         
         samples.readCount = 0;

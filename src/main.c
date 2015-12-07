@@ -77,20 +77,28 @@ int main(void){
     // Read in audio samples, and if we have something write it to the screen
     if(samples.readCount == SEQUENCE_LENGTH) {
         float complex * transform;
-        transform = calc_fft(samples.samples, SEQUENCE_LENGTH);
+        transform = calc_fft(samples.samples, SEQUENCE_LENGTH);        
 
         // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
         for(short current_bucket=0;current_bucket<NUM_BUCKETS;current_bucket++){
             for(short bucket_pos=0;bucket_pos<BUCKET_SIZE;bucket_pos++){
                 short col_pos = (current_bucket*BUCKET_SIZE)+bucket_pos;
                 long scaledSample = (abs(creal(transform[col_pos])) >> 7);
+
+                // Draw the column
                 for(short j=0;j<NOKIA_SCREEN_ROWS;j++){
                    if(scaledSample>j){
                      screenbuffer[col_pos][j] = true;
                    }else{
                      screenbuffer[col_pos][j] = false;
                    }
-                }           
+                }
+
+                if(bucket_pos==0){
+                   for(short j=0;j<NOKIA_SCREEN_ROWS;j++){
+                     screenbuffer[col_pos][j] = screenbuffer[col_pos][j] || (j % 2);
+                   }
+                } 
             }
         }
         

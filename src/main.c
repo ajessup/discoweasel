@@ -16,6 +16,8 @@
 #include "scrooge.h"
 #include "fft.h"
 
+#define NUM_BUCKETS 10 // Number of buckets (one bucket per LED)
+#define BUCKET_SIZE  8  // Bucket size in terms of samples
 
 // 2. Declarations Section
 //   Global Variables
@@ -82,21 +84,24 @@ int main(void){
         transform = calc_fft(samples.samples, SEQUENCE_LENGTH);
 
         // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
-        for(int i=0;i<80;i++){
-  				long scaledSample = (abs(creal(transform[i])) >> 7);
-  				for(short j=0;j<6;j++){
-  					long segmentVal = scaledSample - (j*8);
-  					if(segmentVal < 0){
-  						screenbuffer[i][5-j] = 0x00;
-  					}else if(segmentVal > 8){
-  						screenbuffer[i][5-j] = 0xFF;
-  					}else{
-  						screenbuffer[i][5-j] = ((char)1 << segmentVal)-1;
-  					}
-  				}
+        for(short current_bucket=0;current_bucket<NUM_BUCKETS;current_bucket++){
+            for(short bucket_pos=0;bucket_pos<BUCKET_SIZE;bucket_pos++){
+                short col_pos = (current_bucket*BUCKET_SIZE)+bucket_pos;
+                long scaledSample = (abs(creal(transform[col_pos])) >> 7);
+                for(short j=0;j<NOKIA_SCREEN_V_SEGMENTS;j++){
+                    long segmentVal = scaledSample - (j*NOKIA_SCREEN_V_SEGMENTS_HEIGHT);
+                    if(segmentVal < 0){
+                        screenbuffer[col_pos][5-j] = 0x00;
+                    }else if(segmentVal > NOKIA_SCREEN_V_SEGMENTS_HEIGHT){
+                        screenbuffer[col_pos][5-j] = 0xFF;
+                    }else{
+                        screenbuffer[col_pos][5-j] = ((char)1 << segmentVal)-1;
+                    }
+                }                
+            }
         }
+        
         samples.readCount = 0;
-        //Nokia_ClearScreen();
         Nokia_WriteImg(screenbuffer);
         Heap_Free(transform);
     }

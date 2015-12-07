@@ -199,13 +199,22 @@ void Nokia_ClearScreen(void) {
 }
 
 //@TODO - Do this from a pointer...
-void Nokia_WriteImg(char img[84][6]) {
+void Nokia_WriteImg(bool img[NOKIA_SCREEN_COLS][NOKIA_SCREEN_ROWS]) {
     //Nokia_Write(0x40, true); // Set cursor to 0,0
     //Nokia_Write(0x80, true); // Set cursor to 0,0
     // Write the image
-    for(unsigned short row=0; row<6; row=row+1){
-        for(unsigned short col=0; col<84; col=col+1){
-            Nokia_Write(Reverse_bits(img[col][row]), false);
+    for(short cur_row_segment=NOKIA_SCREEN_V_SEGMENTS-1;cur_row_segment>=0;cur_row_segment--){
+        for(short cur_col=0;cur_col<NOKIA_SCREEN_COLS;cur_col++){
+            char segment_val =
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 7 ])) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 6 ])<< 1) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 5 ])<< 2) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 4 ])<< 3) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 3 ])<< 4) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 2 ])<< 5) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 1 ])<< 6) +
+                (1 * (img[cur_col][cur_row_segment*NOKIA_SCREEN_V_SEGMENTS_HEIGHT + 0 ])<< 7);
+            Nokia_Write(segment_val, false);
         }
     }
 }

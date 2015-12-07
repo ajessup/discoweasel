@@ -13,7 +13,6 @@
 #include "gpio.h"
 #include "tm4c123gh6pm.h"
 #include "nokia.h"
-#include "scrooge.h"
 #include "fft.h"
 
 #define NUM_BUCKETS 10 // Number of buckets (one bucket per LED)
@@ -31,7 +30,7 @@ unsigned long pf4_push_count;
 int main(void){
   DisableInterupts();
   //unsigned short mode=0;
-  char screenbuffer[84][6];
+  bool screenbuffer[NOKIA_SCREEN_COLS][NOKIA_SCREEN_ROWS];
 
   //TExaS_Init(SW_PIN_PF40,LED_PIN_PF321); 
   PortF_Init();        // Call initialization of port PF4, PF3, PF2, PF1, PF0    
@@ -40,9 +39,6 @@ int main(void){
   Nokia_InitDisplay();
 
   Heap_Init();
-
-  // Show scrooge while loading...
-  Nokia_WriteImg(scroogeImg);
 
   // Enable interrupts
   EnableInterupts();
@@ -88,16 +84,13 @@ int main(void){
             for(short bucket_pos=0;bucket_pos<BUCKET_SIZE;bucket_pos++){
                 short col_pos = (current_bucket*BUCKET_SIZE)+bucket_pos;
                 long scaledSample = (abs(creal(transform[col_pos])) >> 7);
-                for(short j=0;j<NOKIA_SCREEN_V_SEGMENTS;j++){
-                    long segmentVal = scaledSample - (j*NOKIA_SCREEN_V_SEGMENTS_HEIGHT);
-                    if(segmentVal < 0){
-                        screenbuffer[col_pos][5-j] = 0x00;
-                    }else if(segmentVal > NOKIA_SCREEN_V_SEGMENTS_HEIGHT){
-                        screenbuffer[col_pos][5-j] = 0xFF;
-                    }else{
-                        screenbuffer[col_pos][5-j] = ((char)1 << segmentVal)-1;
-                    }
-                }                
+                for(short j=0;j<NOKIA_SCREEN_ROWS;j++){
+                   if(scaledSample>j){
+                     screenbuffer[col_pos][j] = true;
+                   }else{
+                     screenbuffer[col_pos][j] = false;
+                   }
+                }           
             }
         }
         

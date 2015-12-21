@@ -14,11 +14,13 @@ MCU = TM4C123GH6PM
 # SOURCES: list of input source sources
 SOURCES = heap.c fft.c nokia.c gpio.c main.c startup_gcc.c
 # INCLUDES: list of includes, by default, use Includes directory
-INCLUDES = -IInclude
+INCLUDES = -IInclude 
 # OUTDIR: directory to use for output
 OUTDIR = build
 # TIVAWARE_PATH: path to tivaware folder
-TIVAWARE_PATH = ../tivaware
+TIVAWARE_PATH = ./lib/tivaware
+# ARM_CS_TOOLS_PATH: path to the arm-cs-tools installation
+ARM_CS_TOOLS_PATH = /Users/jessup/arm-cs-tools
 
 # LD_SCRIPT: linker script
 LD_SCRIPT = $(MCU).ld
@@ -29,7 +31,7 @@ CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall -O
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
 # LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
-LDFLAGS = -L/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb2 -L/Users/jessup/arm-cs-tools/lib/gcc/arm-none-eabi/4.8.3/thumb2 --script=$(LD_SCRIPT) --entry=main -rpath=/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc --gc-sections
+LDFLAGS = -L$(ARM_CS_TOOLS_PATH)/arm-none-eabi/lib/thumb2 -L$(ARM_CS_TOOLS_PATH)/lib/gcc/arm-none-eabi/4.8.3/thumb2 --script=$(LD_SCRIPT) --entry=main -rpath=$(ARM_CS_TOOLS_PATH)/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc --gc-sections
 
 #######################################
 # end of user configuration
@@ -38,8 +40,8 @@ LDFLAGS = -L/Users/jessup/arm-cs-tools/arm-none-eabi/lib/thumb2 -L/Users/jessup/
 #######################################
 # binaries
 #######################################
-CC = arm-none-eabi-gcc
-LD = arm-none-eabi-ld
+CC = $(ARM_CS_TOOLS_PATH)/bin/arm-none-eabi-gcc
+LD = $(ARM_CS_TOOLS_PATH)/bin/arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 RM      = rm -f
 MKDIR	= mkdir -p

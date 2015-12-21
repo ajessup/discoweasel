@@ -12,3 +12,4 @@ util/imgconvert/include*
 tests/test_ffc
 tests/test_heap
 tests/*.dSYM
+lib/tivaware*

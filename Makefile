@@ -21,6 +21,10 @@ OUTDIR = build
 TIVAWARE_PATH = ./lib/tivaware
 # ARM_CS_TOOLS_PATH: path to the arm-cs-tools installation
 ARM_CS_TOOLS_PATH = /Users/jessup/arm-cs-tools
+# LM4_TOOLS_PATH: path to the lm4tools installation
+LM4_TOOLS_PATH = /Users/jessup/sites/tiva/lm4tools
+# OPENOCD_PATH: 
+OPENOCD_PATH=/usr/local/Cellar/open-ocd
 
 # LD_SCRIPT: linker script
 LD_SCRIPT = $(MCU).ld
@@ -50,6 +54,10 @@ MKDIR	= mkdir -p
 # list of object files, placed in the build directory regardless of source path
 OBJECTS = $(addprefix $(OUTDIR)/,$(notdir $(SOURCES:.c=.o)))
 
+# Setup OpenOCD paths
+OPENOCD=$(OPENOCD_PATH)/HEAD/bin/openocd
+BRDPATH=$(OPENOCD_PATH)/HEAD/share/openocd/scripts/board/ek-tm4c123gxl.cfg
+
 # default: build bin
 all: $(OUTDIR)/$(TARGET).bin
 
@@ -69,4 +77,11 @@ $(OUTDIR):
 clean:
 	-$(RM) $(OUTDIR)/*
 
-.PHONY: all clean
+up:
+	$(LM4_TOOLS_PATH)/lm4flash/lm4flash $(OUTDIR)/$(TARGET).bin
+
+debug:
+	$(ARM_CS_TOOLS_PATH)/bin/arm-none-eabi-gdb -ex 'target extended-remote | $(OPENOCD) -f $(BRDPATH) -c "gdb_port pipe; log_output openocd.log"; monitor reset halt; load;' build/a.out
+
+
+.PHONY: all clean up debug

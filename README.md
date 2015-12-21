@@ -7,7 +7,7 @@ Firmware for the DisoWeasel project, for the TM4C123GH6PM microcontroller.
 
 This project requires the following to have been installed:
 
-* [arm-cs-tools](https://launchpad.net/gcc-arm-embedded/+download) for building and debugging
+* [arm-cs-tools](https://github.com/jsnyder/arm-eabi-toolchain) for building and debugging
 * [lm4tools](git://github.com/utzig/lm4tools.git) for flashing the microcontroller
 * [openocd](http://openocd.sourceforge.net/) for debugging
 
@@ -27,7 +27,8 @@ You can extract this anywhere, though a convienent place for it is under ./lib
 ## Building and flashing
 
 1. Adjust the Makefile
-    * Set LM4_TOOLS_PATH to the full path where your `lm4tools` folder was extracted
+    * Set OPENOCD\_PATH to the full path where `openocd` is installed
+    * Set LM4\_TOOLS\_PATH to the full path where your `lm4tools` folder was extracted
     * Set ARM\_CS\_TOOLS\_PATH to the full path where you extracted the `arm-cs-tools` folder
     * Set TIVAWARE\_PATH to the full path to where you extracted and built
       TivaWare (eg: TIVAWARE_PATH = ./lib/tivaware)

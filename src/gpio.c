@@ -4,6 +4,8 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/adc.h"
+#include "driverlib/timer.h"
 #include "tm4c123gh6pm.h"
 
 
@@ -34,36 +36,27 @@ void GPIO_PortF_ISR(void) {
 
 // We're gonna use Port E (PE3) for ADC0 sampling at 125kHz
 void PortE_Init(void){
-    SYSCTL_RCGCADC_R |= 0x01;      // Enable the ADC0 clock by setting bit 0 of SYSCTL_RGCCADC_R
-    SYSCTL_RCGCGPIO_R |= 0x10;     // Enable port E clock pin
-    GPIO_PORTE_DIR_R &= ~ 0x08;    // Make PE3 an input pin
-    GPIO_PORTE_AFSEL_R |= 0x08;    // Enable the alternative function on PE3
-    GPIO_PORTE_DEN_R &= ~0x08;     // Disable digital on PE3
-    GPIO_PORTE_AMSEL_R |= 0x08;    // Enable analog on PE3
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0); 
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE); 
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0); 
+
+    GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_3); // Make PE3 the input for the ADC (PE3 alternate is AIN0)
 
     // Now we set up the sampling timer, which runs at (1/bus speed)*prescale*period
-    SYSCTL_RCGCTIMER_R |= 0x01;  // Activate timer0
-    TIMER0_CTL_R = 0x00;         // Disable during setup
-    TIMER0_CTL_R = 0x20;         // Enable timer0A trigger to ADC
-    TIMER0_CFG_R = 0x00;         // 32 bit mode
-    TIMER0_TAMR_R = 0x02;        // Periodic mode
-    TIMER0_TAPR_R = 0;           // No prescale (ie. run at bus frequency)
-    TIMER0_TAILR_R = 1000;       // Period
-    TIMER0_IMR_R = 0x00;         // Disable interrupts
-    TIMER0_CTL_R |= 0x01;        // Enable the timer
+    TimerDisable(TIMER0_BASE, 0);
+    TimerControlTrigger(TIMER0_BASE, TIMER_A, true); // Set timer to trigger the ADC
+    TimerConfigure(TIMER0_BASE, TIMER_CFG_A_PERIODIC); // Periodic mode         
+    TimerLoadSet(TIMER0_BASE, TIMER_A, 1000); // Set Period
+    TimerPrescaleSet(TIMER0_BASE, TIMER_A, 0); // No prescale (ie. run at bus frequency)
+    TimerIntDisable(TIMER0_BASE, 0xFFFFFFFF); // Disable interrupts for Timer A
+    TimerEnable(TIMER0_BASE, TIMER_A);
 
     // Now set up ADC0
-    ADC0_PC_R = 0x01;  // Peripheral control register. Set to sample at 125kHz (p 888)
-
-    // We're going to use sequencer 3 (the simplest one, only takes one sample)
-    ADC0_ACTSS_R &= ~0x08; // ...first disable it by writing a 0 to bit 3 in ADC_ACTSS_R
-    ADC0_SSPRI_R = 0x3210; // ...set sequencer 3 priority to lowest (honestly don't know why)
-    ADC0_EMUX_R =
-        (ADC0_EMUX_R&0xFFFF0FFF)+0x5000; // Set the ADC to be triggered by the timer
-    ADC0_SSMUX3_R = 4;     // PE3 is analog channel 4 (@TODO not sure about this... does this point to AIN4?)
-    ADC0_SSCTL3_R = 0x06;  // Set flag and end after the first sample
-    ADC0_IM_R |= 0x08;     // Enable interrupts once the conversion is complete by setting bit 3
-    ADC0_ACTSS_R |= 0x08;  // Enable the sequencer
+    ADCClockConfigSet(ADC0_BASE, ADC_CLOCK_SRC_PIOSC | ADC_CLOCK_RATE_EIGHTH, 16);
+    ADCSequenceDisable(ADC0_BASE, 3);
+    ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_TIMER, 0);
+    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_IE | ADC_CTL_END | ADC_CTL_CH4);
+    ADCSequenceEnable(ADC0_BASE, 3);
 
     NVIC_PRI4_R =
         (NVIC_PRI4_R&0xFFFF00FF)|0x00004000; // Set the interrupt handler for ADC0 seq. 3 to priorty 2
@@ -71,6 +64,8 @@ void PortE_Init(void){
 
     samples.readCount = 0;
     currentRead.readCount = 0;
+
+    ADCIntEnable(ADC0_BASE, 3);
 }
 
 void ADC_Seq3_ISR(void) {

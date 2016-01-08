@@ -35,7 +35,7 @@ CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall -O
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
 # LDFLAGS = -T $(LD_SCRIPT) --entry ResetISR --gc-sections
-LDFLAGS = -L$(ARM_CS_TOOLS_PATH)/arm-none-eabi/lib/thumb2 -L$(ARM_CS_TOOLS_PATH)/lib/gcc/arm-none-eabi/4.8.3/thumb2 --script=$(LD_SCRIPT) --entry=main -rpath=$(ARM_CS_TOOLS_PATH)/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc --gc-sections
+LDFLAGS = -L$(TIVAWARE_PATH)/driverlib/gcc -L$(ARM_CS_TOOLS_PATH)/arm-none-eabi/lib/thumb2 -L$(ARM_CS_TOOLS_PATH)/lib/gcc/arm-none-eabi/4.8.3/thumb2 --script=$(LD_SCRIPT) --entry=main -rpath=$(ARM_CS_TOOLS_PATH)/arm-none-eabi/lib/thumb -lm -lgcc -lgcov -lc -ldriver --gc-sections
 
 #######################################
 # end of user configuration
@@ -77,11 +77,10 @@ $(OUTDIR):
 clean:
 	-$(RM) $(OUTDIR)/*
 
-up:
+up: all
 	$(LM4_TOOLS_PATH)/lm4flash/lm4flash $(OUTDIR)/$(TARGET).bin
 
 debug:
 	$(ARM_CS_TOOLS_PATH)/bin/arm-none-eabi-gdb -ex 'target extended-remote | $(OPENOCD) -f $(BRDPATH) -c "gdb_port pipe; log_output openocd.log"; monitor reset halt; load;' build/a.out
-
 
 .PHONY: all clean up debug

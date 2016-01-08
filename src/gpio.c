@@ -1,5 +1,9 @@
 #include <complex.h>
+#include <stdbool.h>
 #include "gpio.h"
+#include "inc/hw_memmap.h"
+#include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
 #include "tm4c123gh6pm.h"
 
 
@@ -15,28 +19,12 @@
 void PortF_Init(void){
     pf4_push_count = 1;
     //volatile unsigned long delay;
-    SYSCTL_RCGC2_R |= 0x00000020;     // 1) F clock @TODO This is a legacy register, should switch for the correct ones
-    //delay = SYSCTL_RCGC2_R;           // delay   
-    GPIO_PORTF_LOCK_R = 0x4C4F434B;   // 2) unlock PortF PF0  
-    GPIO_PORTF_CR_R = 0x1F;           // allow changes to PF4-0       
-    GPIO_PORTF_AMSEL_R = 0x00;        // 3) disable analog function
-    GPIO_PORTF_PCTL_R = 0x00000000;   // 4) GPIO clear bit PCTL  
-    GPIO_PORTF_DIR_R = 0x0E;          // 5) PF4,PF0 input, PF3,PF2,PF1 output   
-    GPIO_PORTF_AFSEL_R = 0x00;        // 6) no alternate function
-    GPIO_PORTF_PUR_R = 0x11;          // enable pullup resistors on PF4,PF0       
-    GPIO_PORTF_DEN_R = 0x1F;          // 7) enable digital pins PF4-PF0        
-
-    //Configure PF4 for interrupts
-    GPIO_PORTF_IS_R &=  ~0x10;  // Set the IS bit to true, since we are detecting edges
-    GPIO_PORTF_IBE_R &= ~0x10; // Set IBE bit to false, since we only want to trigger the falling edge, not both edges
-    GPIO_PORTF_IEV_R &= ~0x10; // Set the IVE bit to false (to trigger on falling rather than rising edge)
-    GPIO_PORTF_ICR_R = 0x10;   // Clear the ICR flag which will later be set when the interrupt is triggered
-                             // Note: *Setting* this bit acts to *clear* the IM_R below
-    GPIO_PORTF_IM_R |= 0x10;   // Set the IME bit to true (arm the interrupt)
-    // We establish the priority of Port F interrupt to 5 by setting bits 23 – 21 in the NVIC_PRI7_R
-    NVIC_PRI7_R = (NVIC_PRI7_R&0xFF00FFFF)|0x00A00000;
-    // We activate Port F interrupts in the NVIC by setting bit 30 in the NVIC_EN0_R register
-    NVIC_EN0_R = 0x40000000; // @TODO - Set this more cleanly
+    GPIOIntRegister(GPIO_PORTF_BASE, GPIO_PortF_ISR);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);    //PORT B
+    GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_4 | GPIO_PIN_0);
+    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1); // 5) PF4,PF0 input, PF3,PF2,PF1 output 
+    GPIOIntTypeSet(GPIO_PORTF_BASE, GPIO_PIN_4 | GPIO_PIN_0, GPIO_FALLING_EDGE);
+    GPIOIntEnable(GPIO_PORTF_BASE, GPIO_INT_PIN_0 | GPIO_INT_PIN_4);
 }
 
 void GPIO_PortF_ISR(void) {

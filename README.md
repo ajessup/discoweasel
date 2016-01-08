@@ -8,7 +8,7 @@ Firmware for the DisoWeasel project, for the TM4C123GH6PM microcontroller.
 This project requires the following to have been installed:
 
 * [arm-cs-tools](https://github.com/jsnyder/arm-eabi-toolchain) for building and debugging
-* [lm4tools](git://github.com/utzig/lm4tools.git) for flashing the microcontroller
+* [lm4tools](http://github.com/utzig/lm4tools.git) for flashing the microcontroller
 * [openocd](http://openocd.sourceforge.net/) for debugging
 
 ## Install TivaWare driver and headers
@@ -37,11 +37,4 @@ You can extract this anywhere, though a convienent place for it is under ./lib
 
 4. The output files will be created in the 'build' folder. To flash it run `make up`.
 
-## Debugging with gdb
-
-These chips are supported in openocd HEAD ([credit to Karl Palsson](http://sourceforge.net/p/openocd/mailman/message/32139143/)). The [openocd website](http://openocd.sourceforge.net/) has instructions on how to install it.
-
-With openocd installed, run gdb with this command:
-```
-arm-none-eabi-gdb -ex 'target extended-remote | openocd -f board/ek-tm4c1294xl.cfg -c "gdb_port pipe; log_output openocd.log"; monitor reset; monitor halt'
-```
+5. To drop into the debugger, `make debug`

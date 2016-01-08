@@ -79,6 +79,10 @@ int main(void){
         float complex * transform;
         transform = calc_fft(samples.samples, SEQUENCE_LENGTH);        
 
+        // Zero out the first response from transform since it collects
+        // a lot of noise
+        transform[0] = (complex double)0;
+
         // Max read of ADC is 12bits (4024), bit-shift 7 to max of 36
         for(short current_bucket=0;current_bucket<NUM_BUCKETS;current_bucket++){
             unsigned long bucket_total = 0;

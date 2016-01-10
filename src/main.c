@@ -34,7 +34,7 @@ unsigned long pf4_push_count;
 int main(void){
   DisableInterupts();
 
-  //SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+  SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
   //unsigned short mode=0;
   bool screenbuffer[NOKIA_SCREEN_COLS][NOKIA_SCREEN_ROWS];

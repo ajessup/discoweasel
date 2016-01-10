@@ -29,85 +29,29 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/gpio.h"
 
-// @TODO - Refactor all of these to use defs from #include "tm4c123gh6pm.h"
-
-#define SSI_STATUS_BUSY      0x10
-#define SSI_RX_FIFO_FULL     0x08
-#define SSI_RX_FIFO_NEMPTY   0x04
-#define SSI_TX_FIFO_NFULL    0x02
-#define SSI_TX_FIFO_EMPTY    0x01
-
-#define SSI0_STATUS_R        (*((volatile unsigned long *)0x4000800C)) // Register 4 - SSI0 Status register
-
-#define GPIO_PORTA_DATA_R    (*((volatile unsigned long *)0x400043FC)) // Regsiter 1 - GPIO Data register (+full bitmask)
-#define GPIO_PORTA_DIR_R     (*((volatile unsigned long *)0x40004400)) // Register 2 - GPIO Direction Control Register
-#define GPIO_PORTA_AFSEL_R   (*((volatile unsigned long *)0x40004420)) // Register 10 - GPIO AFSEL for Port A
-#define GPIO_PORTA_DEN_R     (*((volatile unsigned long *)0x4000451C)) // Register 18 - GPIO Port A digital enable
-
-#define GPIO_PORTA_6_ENABLE  0x40
-#define GPIO_PORTA_7_ENABLE  0x80
-
 /**
- * To initilaise SSI on the Tiva C, we perform the following as described in section 15.4 of the Tiva C data sheet
- */
-
-void TM4C123_SSI_Init() {   
-    
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-    
-    GPIOPinConfigure(GPIO_PA2_SSI0CLK);
-    GPIOPinConfigure(GPIO_PA3_SSI0FSS);
-    GPIOPinConfigure(GPIO_PA4_SSI0RX);
-    GPIOPinConfigure(GPIO_PA5_SSI0TX);
-
-    GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5);
-
-    GPIO_PORTA_AFSEL_R = 0x2C;
-    
-    // Set the direction register for PA4, PA6 and PA7 to output
-    GPIO_PORTA_DIR_R |= 0xC0; // @TODO - Make PA4 out as well, set to |= 0xD0
-    
-    // Enable digital I/O on PA2,3,4,5,6,7
-    GPIO_PORTA_DEN_R |= 0xEC;  // @TODO - Set to xFC to enable PA4
-    
-    //Having enabled SSI0, we now need to configure it...
-    SSIConfigSetExpClk(
-        SSI0_BASE, 
-        SysCtlClockGet(), 
-        SSI_FRF_MOTO_MODE_0, 
-        SSI_MODE_MASTER, 
-        200000, 
-        8
-    );
-
-    SSIEnable(SSI0_BASE);
-}
-
-/**
- * To send a single command to the display, I need to do the following:
+ * To send a single command to the display, we need to do the following:
  *  * Set the DC line low
  *  * Set the CE line low (the SSI module will do this)
  *  * Send a byte down the wire, most significant bit first (the SSI module will do this)
  *  * Set the CE line high again (the SSI module will do this)
- */ 
-
+ */
 void Nokia_Write(char data, bool isCmd) {
     // In sending a command, wait until the SSI0 FIFO buffer is free
-    while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
+    while(SSIBusy(SSI0_BASE)){};
     if(isCmd){
         // Set the DC line (PA 6) to low
-        GPIO_PORTA_DATA_R &= ~GPIO_PORTA_6_ENABLE;
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_6, 0);
     }else{
-        // Set the DC line (PA 6) to low
-        GPIO_PORTA_DATA_R |= GPIO_PORTA_6_ENABLE;
+        // Set the DC line (PA 6) to high
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_6, GPIO_PIN_6);
     }
     
     // Write the data
     SSIDataPut(SSI0_BASE, data);
 
     // Wait again until the buffer is free
-    while(SSI0_STATUS_R & SSI_STATUS_BUSY){};
+    while(SSIBusy(SSI0_BASE)){};
 }
 
 unsigned char Reverse_bits(unsigned char num){
@@ -125,17 +69,45 @@ unsigned char Reverse_bits(unsigned char num){
 }
 
 /**
+ * Set up SSI for talking to the Nokia, we will configure
+ *  - PA2 for the SSI0 clock
+ *  - PA3 for the SSI0 C/E line
+ *  - PA5 for the SSI0 TX line
+ *  - PA6 the command/data toggle line (GPIO out)
+ *  - PA7 as the data reset line (GPIO out)
  * To initialise the display, we need to perform the following:
  *  * Put the RESET pin (PA7) LOW then HIGH
  *  * Send a series of commands to the display
  */
 
 void Nokia_InitDisplay() {
-    TM4C123_SSI_Init();
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
     
-    GPIO_PORTA_DATA_R = 0x00;
+    GPIOPinConfigure(GPIO_PA2_SSI0CLK);
+    GPIOPinConfigure(GPIO_PA3_SSI0FSS);
+    GPIOPinConfigure(GPIO_PA5_SSI0TX);
+
+    GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, GPIO_PIN_6);
+    GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, GPIO_PIN_7);
+
+    GPIOPinTypeSSI(GPIO_PORTA_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_5);
+    
+    //Having enabled SSI0, we now need to configure it...
+    SSIConfigSetExpClk(
+        SSI0_BASE, 
+        SysCtlClockGet(), 
+        SSI_FRF_MOTO_MODE_0, 
+        SSI_MODE_MASTER, 
+        200000, 
+        8
+    );
+
+    SSIEnable(SSI0_BASE);
+    
+    GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_7, 0);
     for(unsigned long delay=0; delay<10; delay=delay+1); // @TODO - Need a smarter way to do this
-    GPIO_PORTA_DATA_R = GPIO_PORTA_7_ENABLE;
+    GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_7, GPIO_PIN_7);
     
     Nokia_Write(0x21, true); // Enable LCD extended commands
     Nokia_Write(0xC0, true); // Set Vop (contrast)

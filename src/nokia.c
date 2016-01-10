@@ -37,27 +37,15 @@
 #define SSI_TX_FIFO_NFULL    0x02
 #define SSI_TX_FIFO_EMPTY    0x01
 
-#define SSI0_CR0_R           (*((volatile unsigned long *)0x40008000)) // Register 1 - SSI0 Control Register 0
-#define SSI0_CR1_R           (*((volatile unsigned long *)0x40008004)) // Register 2 - SSI0 Control Register 1
-#define SSI0_DATA_R          (*((volatile unsigned long *)0x40008008)) // Register 3 - SSI0 Data Register
 #define SSI0_STATUS_R        (*((volatile unsigned long *)0x4000800C)) // Register 4 - SSI0 Status register
-#define SSI0_CCR_R           (*((volatile unsigned long *)0x40008FC8)) // Register 11 - SS0 Clock Control Register
-#define SSI0_SSICPS_R        (*((volatile unsigned long *)0x40008010)) // Register 5 - SSI Clock Prescale
-
-#define GPIO_PORTA_4_ENABLE  0x08
-#define GPIO_PORTA_6_ENABLE  0x40
-#define GPIO_PORTA_7_ENABLE  0x80
 
 #define GPIO_PORTA_DATA_R    (*((volatile unsigned long *)0x400043FC)) // Regsiter 1 - GPIO Data register (+full bitmask)
 #define GPIO_PORTA_DIR_R     (*((volatile unsigned long *)0x40004400)) // Register 2 - GPIO Direction Control Register
 #define GPIO_PORTA_AFSEL_R   (*((volatile unsigned long *)0x40004420)) // Register 10 - GPIO AFSEL for Port A
-#define GPIO_PORTA_AMSEL_R   (*((volatile unsigned long *)0x40004528))
 #define GPIO_PORTA_DEN_R     (*((volatile unsigned long *)0x4000451C)) // Register 18 - GPIO Port A digital enable
-#define GPIO_PORTA_GPIOCTL_R (*((volatile unsigned long *)0x4000452C)) // Register 22 - GPIOCTL selector for port A
 
-#define SYSCTL_RCGCGPIO_R    (*((volatile unsigned long *)0x400FE608)) // Register 60 - GPIO RMCGC
-#define SYSCTL_RCGSSI_R      (*((volatile unsigned long *)0x400FE61C)) // Register 64 - SSI RMCGC
-#define SYSCTL_RCGC1_R       (*((volatile unsigned long *)0x400FE104)) // Register 135 Run mode clock gating control register
+#define GPIO_PORTA_6_ENABLE  0x40
+#define GPIO_PORTA_7_ENABLE  0x80
 
 /**
  * To initilaise SSI on the Tiva C, we perform the following as described in section 15.4 of the Tiva C data sheet

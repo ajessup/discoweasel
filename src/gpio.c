@@ -20,9 +20,8 @@
 // Notes: These five pins are connected to hardware on the LaunchPad
 void PortF_Init(void){
     pf4_push_count = 1;
-    //volatile unsigned long delay;
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
     GPIOIntRegister(GPIO_PORTF_BASE, GPIO_PortF_ISR);
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);    //PORT B
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_4 | GPIO_PIN_0);
     GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1); // 5) PF4,PF0 input, PF3,PF2,PF1 output 
     GPIOIntTypeSet(GPIO_PORTF_BASE, GPIO_PIN_4 | GPIO_PIN_0, GPIO_FALLING_EDGE);

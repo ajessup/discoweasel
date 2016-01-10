@@ -8,6 +8,10 @@
 #include <complex.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "driverlib/sysctl.h"
 
 #include "heap.h"
 #include "gpio.h"
@@ -29,6 +33,9 @@ unsigned long pf4_push_count;
 // MAIN: Mandatory for a C Program to be executable
 int main(void){
   DisableInterupts();
+
+  //SysCtlClockSet(SYSCTL_SYSDIV_1 | SYSCTL_USE_OSC | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+
   //unsigned short mode=0;
   bool screenbuffer[NOKIA_SCREEN_COLS][NOKIA_SCREEN_ROWS];
 

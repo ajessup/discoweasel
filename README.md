@@ -1,14 +1,14 @@
-DiscoWeasel 
+DiscoWeasel
 ===========
 
-Firmware for the DisoWeasel project, for the TM4C123GH6PM microcontroller. 
+Firmware for the DisoWeasel project, for the TM4C123GH6PM microcontroller.
 
 ## Install tooling
 
 This project requires the following to have been installed:
 
 * [arm-cs-tools](https://github.com/jsnyder/arm-eabi-toolchain) for building and debugging
-* [lm4tools](http://github.com/utzig/lm4tools.git) for flashing the microcontroller
+* [lm4tools](http://github.com/utzig/lm4tools.git) for flashing the microcontroller (you'll have to build it too)
 * [openocd](http://openocd.sourceforge.net/) for debugging
 
 ## Install TivaWare driver and headers
@@ -21,8 +21,12 @@ then run `make` to build TivaWare.
     mkdir tivaware
     cd tivaware
     unzip SW-TM4C-1.1.exe
+    make
 
-You can extract this anywhere, though a convienent place for it is under ./lib
+Note, you may want to configure the defaults under ./makedefs - in particular to
+make sure the libraries are built with the right float support (-mfloat-abi=softfp)
+
+You can extract this anywhere.
 
 ## Building and flashing
 

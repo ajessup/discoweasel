@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <complex.h>
 #include <stdbool.h>
 #include "gpio.h"
@@ -23,7 +24,7 @@ void PortF_Init(void){
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
     GPIOIntRegister(GPIO_PORTF_BASE, GPIO_PortF_ISR);
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE, GPIO_PIN_4 | GPIO_PIN_0);
-    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1); // 5) PF4,PF0 input, PF3,PF2,PF1 output 
+    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1); // 5) PF4,PF0 input, PF3,PF2,PF1 output
     GPIOIntTypeSet(GPIO_PORTF_BASE, GPIO_PIN_4 | GPIO_PIN_0, GPIO_FALLING_EDGE);
     GPIOIntEnable(GPIO_PORTF_BASE, GPIO_INT_PIN_0 | GPIO_INT_PIN_4);
 }
@@ -35,16 +36,16 @@ void GPIO_PortF_ISR(void) {
 
 // We're gonna use Port E (PE3) for ADC0 sampling at 125kHz
 void PortE_Init(void){
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0); 
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE); 
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0); 
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
 
     GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_3); // Make PE3 the input for the ADC (PE3 alternate is AIN0)
 
     // Now we set up the sampling timer, which runs at (1/bus speed)*prescale*period
     TimerDisable(TIMER0_BASE, 0);
     TimerControlTrigger(TIMER0_BASE, TIMER_A, true); // Set timer to trigger the ADC
-    TimerConfigure(TIMER0_BASE, TIMER_CFG_A_PERIODIC); // Periodic mode         
+    TimerConfigure(TIMER0_BASE, TIMER_CFG_A_PERIODIC); // Periodic mode
     TimerLoadSet(TIMER0_BASE, TIMER_A, 1000); // Set Period
     TimerPrescaleSet(TIMER0_BASE, TIMER_A, 0); // No prescale (ie. run at bus frequency)
     TimerIntDisable(TIMER0_BASE, 0xFFFFFFFF); // Disable interrupts for Timer A
